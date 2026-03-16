@@ -1,9 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { useUserStore } from '@/store/userStore';
 import { useLeaderboardStore } from '@/store/leaderboardStore';
 import { queueMove } from '@/logic/playerLogic';
 import { UI_CONFIG } from '@/utils/constants';
+
+const UCI_NOTICES = [
+  'UCI introduces emergency wheel-depth cap after roadside collision',
+  'Safety panel opens inquiry into musette aerodynamics',
+  "Following today's incident, commissaires will now monitor bidon handovers more closely",
+  'Race convoy unchanged; helmet visor guidance expected next month',
+  'In response to safety concerns, riders may now wear slightly thicker gloves',
+  'Team cars remain essential, says governing body after soigneur flattened',
+  'Feed zone review launched; sock-height crackdown unaffected',
+  'Stakeholders agree road safety is complex, wheel rules simpler',
+  'New policy limits deep-section rims during active car impacts',
+  'Governing body vows action on bottle littering after convoy incident',
+];
+
+function useRandomNotice() {
+  return useMemo(
+    () => UCI_NOTICES[Math.floor(Math.random() * UCI_NOTICES.length)],
+    []
+  );
+}
 
 export function Score() {
   const score = useGameStore(state => state.score);
@@ -15,10 +35,10 @@ export function Controls() {
   return (
     <div id="controls">
       <div>
-        <button onClick={() => queueMove('forward')}>▲</button>
-        <button onClick={() => queueMove('left')}>◀</button>
-        <button onClick={() => queueMove('backward')}>▼</button>
-        <button onClick={() => queueMove('right')}>▶</button>
+        <button onClick={() => queueMove('forward')}>&#9650;</button>
+        <button onClick={() => queueMove('left')}>&#9664;</button>
+        <button onClick={() => queueMove('backward')}>&#9660;</button>
+        <button onClick={() => queueMove('right')}>&#9654;</button>
       </div>
     </div>
   );
@@ -34,28 +54,25 @@ export function Result() {
 
   const [nameInput, setNameInput] = useState('');
   const [showNameForm, setShowNameForm] = useState(false);
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     if (status === 'running') {
       setShowNameForm(false);
       setNameInput('');
     }
+    if (status === 'over') {
+      setNotice(UCI_NOTICES[Math.floor(Math.random() * UCI_NOTICES.length)]);
+    }
   }, [status]);
 
-  // Only render if game is over
   if (status !== 'over') return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const name = nameInput.trim();
-
-    // Create a temporary user data object for immediate save
     const tempUserId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-
-    // Set the user name in localStorage
     setUserName(name);
-
-    // Save the score immediately with the new name
     if (score > 0) {
       addEntry({
         id: tempUserId,
@@ -65,7 +82,6 @@ export function Result() {
         console.error('Failed to save score:', error);
       });
     }
-
     setShowNameForm(false);
     reset();
   };
@@ -82,10 +98,11 @@ export function Result() {
     <div id="result-container">
       {showNameForm ? (
         <div id="result">
-          <h1>Game Over</h1>
-          <p>Your score: {score}</p>
+          <div className="uci-header">UCI COMMUNIQUE</div>
+          <p className="uci-notice">{notice}</p>
+          <p className="result-score">Distance: {score}m</p>
           <form onSubmit={handleSubmit} id="name-form">
-            <label htmlFor="player-name">Enter your name:</label>
+            <label htmlFor="player-name">Soigneur name:</label>
             <input
               id="player-name"
               type="text"
@@ -95,14 +112,15 @@ export function Result() {
               autoFocus
               maxLength={20}
             />
-            <button type="submit">Start</button>
+            <button type="submit">Go!</button>
           </form>
         </div>
       ) : (
         <div id="result">
-          <h1>Game Over</h1>
-          {userData && <p className="player-name">Player: {userData.name}</p>}
-          <p>Your score: {score}</p>
+          <div className="uci-header">UCI COMMUNIQUE</div>
+          <p className="uci-notice">{notice}</p>
+          {userData && <p className="player-name">Soigneur: {userData.name}</p>}
+          <p className="result-score">Distance: {score}m</p>
           <button onClick={handleRetry}>Retry</button>
         </div>
       )}
@@ -114,16 +132,16 @@ export function CornScore() {
   const cornCount = useGameStore(state => state.cornCount);
   const { MAX_CORN_DISPLAY, CORN_SCORE_STYLE } = UI_CONFIG;
 
-  let corns = '';
+  let items = '';
   if (cornCount <= MAX_CORN_DISPLAY) {
-    corns = '🌽'.repeat(cornCount);
+    items = '\u{1F9F4}'.repeat(cornCount);
   } else {
-    corns = '🌽'.repeat(MAX_CORN_DISPLAY) + ` +${cornCount - MAX_CORN_DISPLAY}`;
+    items = '\u{1F9F4}'.repeat(MAX_CORN_DISPLAY) + ` +${cornCount - MAX_CORN_DISPLAY}`;
   }
 
   return (
     <div id="corn-score" style={CORN_SCORE_STYLE}>
-      {corns}
+      {items}
     </div>
   );
 }

@@ -38,16 +38,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
   pause: () => {
     set({ isPaused: true });
     trackEvent('game_pause', {
-      game_id: 'crossy_road',
-      game_name: 'Crossy Road',
+      game_id: 'feed_zone',
+      game_name: 'Feed Zone',
       event_category: 'game_interaction',
     });
   },
   resume: () => {
     set({ isPaused: false });
     trackEvent('game_resume', {
-      game_id: 'crossy_road',
-      game_name: 'Crossy Road',
+      game_id: 'feed_zone',
+      game_name: 'Feed Zone',
       event_category: 'game_interaction',
     });
   },
@@ -79,8 +79,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ cornCount: newCornCount, totalCornCollected: newTotalCorn });
 
     trackEvent('corn_collected', {
-      game_id: 'crossy_road',
-      game_name: 'Crossy Road',
+      game_id: 'feed_zone',
+      game_name: 'Feed Zone',
       corn_count: newCornCount,
       total_corn_collected: newTotalCorn,
       event_category: 'game_interaction',
@@ -107,9 +107,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }).catch(error => {
         console.error('Failed to save score to leaderboard:', error);
       });
+    }
     trackEvent('game_over', {
-      game_id: 'crossy_road',
-      game_name: 'Crossy Road',
+      game_id: 'feed_zone',
+      game_name: 'Feed Zone',
       final_score: state.score,
       corn_collected: state.cornCount,
       total_corn_collected: state.totalCornCollected,
@@ -121,7 +122,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (typeof window !== 'undefined' && window.parent && window.parent !== window) {
       window.parent.postMessage({
         type: 'GAME_OVER',
-        gameName: 'Crossy Road',
+        gameName: 'Feed Zone',
         score: state.score,
         level: undefined,
         cornCollected: state.cornCount,
@@ -134,8 +135,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const newPlayCount = state.playCount + 1;
 
     trackEvent('game_restart', {
-      game_id: 'crossy_road',
-      game_name: 'Crossy Road',
+      game_id: 'feed_zone',
+      game_name: 'Feed Zone',
       play_count: newPlayCount,
       restart_method: 'keyboard',
       event_category: 'game_interaction',

@@ -30,7 +30,9 @@ export function randomElement<T>(array: T[]): T {
 
 export function generateForesMetadata(): ForestRow {
   const occupiedTiles = new Set();
-  const trees = Array.from({ length: 4 }, () => {
+  // More roadside elements for a crowded feed zone feel
+  const count = THREE.MathUtils.randInt(4, 6);
+  const trees = Array.from({ length: count }, () => {
     let tileIndex;
     do {
       tileIndex = THREE.MathUtils.randInt(minTileIndex, maxTileIndex);
@@ -64,7 +66,8 @@ export function generateLogLaneMetadata(): LogRow {
   const direction = randomElement([true, false]);
   const speed = randomElement([110, 140, 170]);
   // For logs, just store N logs; position will be calculated in animation
-  const logs = Array.from({ length: 3 }, (_, i) => ({ index: i }));
+  const logCount = THREE.MathUtils.randInt(3, 5);
+  const logs = Array.from({ length: logCount }, (_, i) => ({ index: i }));
   return { type: 'log', direction, speed, logs };
 }
 
@@ -72,7 +75,7 @@ export function generateAnimalLaneMetadata(): AnimalRow {
   const direction = randomElement([true, false]);
   const speed = randomElement([120, 150, 180]);
   const animals = Array.from({ length: 2 }, (_, i) => {
-    const species = randomElement(['boar', 'deer', 'bear']);
+    const species = randomElement(['motorbike', 'commissaire', 'peloton', 'breakaway']);
     return { index: i, species };
   });
   return { type: 'animal', direction, speed, animals };

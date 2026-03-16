@@ -6,6 +6,7 @@ import { visibleTilesDistance } from '@/utils/constants';
 import { CornProps } from '@/types';
 import * as THREE from 'three';
 
+// Energy gel / spare bidon collectible — replaces corn
 export default function Corn({
   tileIndex,
   collected = false,
@@ -39,25 +40,46 @@ export default function Corn({
     ref.current.position.z = 30 + 10 * Math.sin((elapsed / duration) * Math.PI);
   });
   if (done) return null;
+
+  // Alternate between energy gel and bidon based on tile index
+  const isGel = tileIndex % 2 === 0;
+
   return (
     <group ref={ref} position={[tileIndex * tileSize, 0, 6]}>
-      {/* Corn cob (yellow) */}
+      {isGel ? <EnergyGel /> : <SpareBidon />}
+    </group>
+  );
+}
+
+function EnergyGel() {
+  return (
+    <group>
+      {/* Gel packet body */}
       <mesh castShadow receiveShadow>
-        <capsuleGeometry args={[2, 4, 8, 16]} />
-        <meshLambertMaterial color={0xffe066} flatShading />
+        <boxGeometry args={[3, 1.5, 5]} />
+        <meshLambertMaterial color={0xff6f00} flatShading />
       </mesh>
-      {/* Husk (green leaves) */}
-      <mesh position={[0, -1.5, -2]} rotation-z={0.3}>
-        <cylinderGeometry args={[0.3, 0.7, 3, 8]} />
-        <meshLambertMaterial color={0x4caf50} flatShading />
+      {/* Gel top / tear tab */}
+      <mesh position={[0, 0, 3.2]} castShadow receiveShadow>
+        <boxGeometry args={[2, 1.5, 1]} />
+        <meshLambertMaterial color={0xffcc02} flatShading />
       </mesh>
-      <mesh position={[0.7, 0, -2]} rotation-z={-0.7}>
-        <cylinderGeometry args={[0.2, 0.5, 2.5, 8]} />
-        <meshLambertMaterial color={0x4caf50} flatShading />
+    </group>
+  );
+}
+
+function SpareBidon() {
+  return (
+    <group>
+      {/* Bidon bottle */}
+      <mesh castShadow receiveShadow>
+        <cylinderGeometry args={[1.8, 1.8, 5, 8]} />
+        <meshLambertMaterial color={0x00e676} flatShading />
       </mesh>
-      <mesh position={[-0.7, 0, -2]} rotation-z={0.7}>
-        <cylinderGeometry args={[0.2, 0.5, 2.5, 8]} />
-        <meshLambertMaterial color={0x4caf50} flatShading />
+      {/* Bidon cap / nozzle */}
+      <mesh position={[0, 0, 3.2]} castShadow receiveShadow>
+        <cylinderGeometry args={[0.7, 0.9, 1.5, 8]} />
+        <meshLambertMaterial color={0xeeeeee} flatShading />
       </mesh>
     </group>
   );

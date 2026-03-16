@@ -8,6 +8,7 @@ body {
 
 #root {
   width: 100%;
+  height: 100vh;
 }
 
 .game {
@@ -126,6 +127,33 @@ body {
 .player-name {
   font-size: 0.9em;
   color: #333;
+  margin: 0;
+}
+
+.uci-header {
+  background-color: #1a237e;
+  color: #fdd835;
+  padding: 8px 24px;
+  font-size: 0.7em;
+  letter-spacing: 0.15em;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.uci-notice {
+  font-size: 0.55em;
+  line-height: 1.8;
+  color: #222;
+  text-align: center;
+  max-width: 340px;
+  margin: 0;
+  padding: 0 10px;
+}
+
+.result-score {
+  font-size: 1em;
+  color: #111;
   margin: 0;
 }
 

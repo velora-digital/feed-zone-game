@@ -41,14 +41,14 @@ export default function Player() {
   return (
     <Bounds fit clip observe margin={10}>
       <group ref={player}>
-        <ChickenBody />
+        <SoigneurBody />
         <DirectionalLight ref={lightRef} />
       </group>
     </Bounds>
   );
 }
 
-export function ChickenBody() {
+export function SoigneurBody() {
   const group = useRef();
   useFrame(() => {
     if (!group.current) return;
@@ -93,79 +93,110 @@ export function ChickenBody() {
   });
   return (
     <group ref={group}>
-      {/* Body: round, chicken-like */}
-      <mesh position={[0, 0, 13]} castShadow receiveShadow>
-        <sphereGeometry args={[8, 24, 24]} />
-        <meshLambertMaterial color={0xffffff} flatShading />
-      </mesh>
-      {/* Head: slightly smaller than body */}
-      <mesh position={[0, 0, 22.5]} castShadow receiveShadow>
-        <sphereGeometry args={[5.5, 24, 24]} />
-        <meshLambertMaterial color={0xffffff} flatShading />
-      </mesh>
-      {/* Beak */}
-      <mesh
-        position={[0, 5.5, 25.5]}
-        rotation-x={Math.PI / 2}
-        castShadow
-        receiveShadow
-      >
-        <coneGeometry args={[1.2, 2.5, 12]} />
-        <meshLambertMaterial color={0xffc300} flatShading />
-      </mesh>
-      {/* Comb (red crest) */}
-      <mesh position={[0, 0.5, 28.5]} castShadow receiveShadow>
-        <sphereGeometry args={[0.9, 12, 12]} />
-        <meshLambertMaterial color={0xd7263d} flatShading />
-      </mesh>
-      <mesh position={[-0.9, 0.2, 28]} castShadow receiveShadow>
-        <sphereGeometry args={[0.6, 12, 12]} />
-        <meshLambertMaterial color={0xd7263d} flatShading />
-      </mesh>
-      <mesh position={[0.9, 0.2, 28]} castShadow receiveShadow>
-        <sphereGeometry args={[0.6, 12, 12]} />
-        <meshLambertMaterial color={0xd7263d} flatShading />
-      </mesh>
-      {/* Left Eye */}
-      <mesh position={[-1.7, 3.5, 26.5]} castShadow receiveShadow>
-        <sphereGeometry args={[0.6, 8, 8]} />
-        <meshLambertMaterial color={0x222222} />
-      </mesh>
-      {/* Right Eye */}
-      <mesh position={[1.7, 3.5, 26.5]} castShadow receiveShadow>
-        <sphereGeometry args={[0.6, 8, 8]} />
-        <meshLambertMaterial color={0x222222} />
-      </mesh>
-      {/* Left Wing */}
-      <mesh position={[-6.5, 0, 15]} rotation-z={-0.5} castShadow receiveShadow>
-        <sphereGeometry args={[2.2, 12, 12]} />
-        <meshLambertMaterial color={0xffffff} flatShading />
-      </mesh>
-      {/* Right Wing */}
-      <mesh position={[6.5, 0, 15]} rotation-z={0.5} castShadow receiveShadow>
-        <sphereGeometry args={[2.2, 12, 12]} />
-        <meshLambertMaterial color={0xffffff} flatShading />
-      </mesh>
-      {/* Left Foot */}
-      <mesh
-        position={[-1.2, 0, 7]}
-        rotation-x={Math.PI / 2}
-        castShadow
-        receiveShadow
-      >
-        <cylinderGeometry args={[0.8, 0.8, 8, 12]} />
-        <meshLambertMaterial color={0xffa500} flatShading />
-      </mesh>
-      {/* Right Foot */}
-      <mesh
-        position={[1.2, 0, 7]}
-        rotation-x={Math.PI / 2}
-        castShadow
-        receiveShadow
-      >
-        <cylinderGeometry args={[0.8, 0.8, 8, 12]} />
-        <meshLambertMaterial color={0xffa500} flatShading />
-      </mesh>
+      {/* Soigneur: boxy person with musette bag and bidon */}
+      <group>
+        {/* Torso (team polo shirt - blue) */}
+        <mesh position={[0, 0, 13]} castShadow receiveShadow>
+          <boxGeometry args={[10, 6, 12]} />
+          <meshLambertMaterial color={0x1565c0} flatShading />
+        </mesh>
+        {/* Head (skin tone) */}
+        <mesh position={[0, 0, 23]} castShadow receiveShadow>
+          <boxGeometry args={[6, 6, 6]} />
+          <meshLambertMaterial color={0xffcc99} flatShading />
+        </mesh>
+        {/* Cap (team cap) */}
+        <mesh position={[0, 0, 27]} castShadow receiveShadow>
+          <boxGeometry args={[7, 7, 2]} />
+          <meshLambertMaterial color={0x0d47a1} flatShading />
+        </mesh>
+        {/* Cap brim */}
+        <mesh position={[0, 3.5, 25.5]} castShadow receiveShadow>
+          <boxGeometry args={[7, 3, 1]} />
+          <meshLambertMaterial color={0x0d47a1} flatShading />
+        </mesh>
+        {/* Left Eye */}
+        <mesh position={[-1.5, 3.1, 24]} castShadow receiveShadow>
+          <boxGeometry args={[1, 0.5, 1]} />
+          <meshLambertMaterial color={0x222222} />
+        </mesh>
+        {/* Right Eye */}
+        <mesh position={[1.5, 3.1, 24]} castShadow receiveShadow>
+          <boxGeometry args={[1, 0.5, 1]} />
+          <meshLambertMaterial color={0x222222} />
+        </mesh>
+        {/* Left Arm (holding musette out) */}
+        <mesh position={[-7, 2, 14]} castShadow receiveShadow>
+          <boxGeometry args={[3, 3, 10]} />
+          <meshLambertMaterial color={0xffcc99} flatShading />
+        </mesh>
+        {/* Right Arm (holding bidon out) */}
+        <mesh position={[7, 2, 14]} castShadow receiveShadow>
+          <boxGeometry args={[3, 3, 10]} />
+          <meshLambertMaterial color={0xffcc99} flatShading />
+        </mesh>
+        {/* Bidon bottle (in right hand) */}
+        <mesh position={[7, 5, 16]} castShadow receiveShadow>
+          <cylinderGeometry args={[1.5, 1.5, 6, 8]} />
+          <meshLambertMaterial color={0x00e676} flatShading />
+        </mesh>
+        {/* Bidon cap */}
+        <mesh position={[7, 5, 19.5]} castShadow receiveShadow>
+          <cylinderGeometry args={[0.8, 1, 1.5, 8]} />
+          <meshLambertMaterial color={0xeeeeee} flatShading />
+        </mesh>
+
+        {/* ---- Musette bag (left side) ---- */}
+        {/* Strap across chest */}
+        <mesh position={[0, 0, 17]} rotation-z={0.5} castShadow receiveShadow>
+          <boxGeometry args={[14, 1.2, 0.8]} />
+          <meshLambertMaterial color={0xfdd835} flatShading />
+        </mesh>
+        {/* Musette bag body — hanging from left hand */}
+        <mesh position={[-7, 4, 10]} castShadow receiveShadow>
+          <boxGeometry args={[6, 3, 7]} />
+          <meshLambertMaterial color={0xfdd835} flatShading />
+        </mesh>
+        {/* Musette bag flap */}
+        <mesh position={[-7, 5.6, 13]} castShadow receiveShadow>
+          <boxGeometry args={[6.5, 0.6, 2.5]} />
+          <meshLambertMaterial color={0xf9a825} flatShading />
+        </mesh>
+        {/* Team logo stripe on musette */}
+        <mesh position={[-7, 4.6, 10]} castShadow receiveShadow>
+          <boxGeometry args={[5, 0.3, 2]} />
+          <meshLambertMaterial color={0x0d47a1} flatShading />
+        </mesh>
+        {/* Bidons poking out of musette */}
+        <mesh position={[-8, 4.5, 13.5]} rotation-x={0.3} castShadow receiveShadow>
+          <cylinderGeometry args={[1, 1, 4, 6]} />
+          <meshLambertMaterial color={0x00e676} flatShading />
+        </mesh>
+        <mesh position={[-6, 4.5, 13]} rotation-x={-0.2} castShadow receiveShadow>
+          <cylinderGeometry args={[1, 1, 3.5, 6]} />
+          <meshLambertMaterial color={0x29b6f6} flatShading />
+        </mesh>
+
+        {/* Left Leg */}
+        <mesh position={[-2.5, 0, 3]} castShadow receiveShadow>
+          <boxGeometry args={[3, 3, 7]} />
+          <meshLambertMaterial color={0x333333} flatShading />
+        </mesh>
+        {/* Right Leg */}
+        <mesh position={[2.5, 0, 3]} castShadow receiveShadow>
+          <boxGeometry args={[3, 3, 7]} />
+          <meshLambertMaterial color={0x333333} flatShading />
+        </mesh>
+        {/* Shoes */}
+        <mesh position={[-2.5, 1, 0.5]} castShadow receiveShadow>
+          <boxGeometry args={[3.5, 5, 2]} />
+          <meshLambertMaterial color={0xeeeeee} flatShading />
+        </mesh>
+        <mesh position={[2.5, 1, 0.5]} castShadow receiveShadow>
+          <boxGeometry args={[3.5, 5, 2]} />
+          <meshLambertMaterial color={0xeeeeee} flatShading />
+        </mesh>
+      </group>
     </group>
   );
 }
