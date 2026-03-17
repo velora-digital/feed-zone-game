@@ -95,25 +95,25 @@ export function SoigneurBody() {
     <group ref={group}>
       {/* Soigneur: boxy person with musette bag and bidon */}
       <group>
-        {/* Torso (team polo shirt - blue) */}
+        {/* Torso (team polo shirt - green to match feedable cyclists) */}
         <mesh position={[0, 0, 13]} castShadow receiveShadow>
           <boxGeometry args={[10, 6, 12]} />
-          <meshLambertMaterial color={0x1565c0} flatShading />
+          <meshLambertMaterial color={0x00e676} flatShading />
         </mesh>
         {/* Head (skin tone) */}
         <mesh position={[0, 0, 23]} castShadow receiveShadow>
           <boxGeometry args={[6, 6, 6]} />
           <meshLambertMaterial color={0xffcc99} flatShading />
         </mesh>
-        {/* Cap (team cap) */}
+        {/* Cap (team cap - darker green) */}
         <mesh position={[0, 0, 27]} castShadow receiveShadow>
           <boxGeometry args={[7, 7, 2]} />
-          <meshLambertMaterial color={0x0d47a1} flatShading />
+          <meshLambertMaterial color={0x00c853} flatShading />
         </mesh>
         {/* Cap brim */}
         <mesh position={[0, 3.5, 25.5]} castShadow receiveShadow>
           <boxGeometry args={[7, 3, 1]} />
-          <meshLambertMaterial color={0x0d47a1} flatShading />
+          <meshLambertMaterial color={0x00c853} flatShading />
         </mesh>
         {/* Left Eye */}
         <mesh position={[-1.5, 3.1, 24]} castShadow receiveShadow>
@@ -165,7 +165,7 @@ export function SoigneurBody() {
         {/* Team logo stripe on musette */}
         <mesh position={[-7, 4.6, 10]} castShadow receiveShadow>
           <boxGeometry args={[5, 0.3, 2]} />
-          <meshLambertMaterial color={0x0d47a1} flatShading />
+          <meshLambertMaterial color={0x00c853} flatShading />
         </mesh>
         {/* Bidons poking out of musette */}
         <mesh position={[-8, 4.5, 13.5]} rotation-x={0.3} castShadow receiveShadow>

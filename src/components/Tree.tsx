@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
 import { tileSize } from '@/utils/constants';
 import { TreeProps } from '@/types';
 
@@ -60,6 +61,31 @@ function BarrierWithBunting({ tileIndex }: { tileIndex: number }) {
   );
 }
 
+function WavingFlag({ color, phaseOffset = 0 }: { color: number; phaseOffset?: number }) {
+  const flagRef = useRef(null);
+  useFrame(({ clock }) => {
+    if (!flagRef.current) return;
+    // Wave back and forth
+    const angle = Math.sin(clock.elapsedTime * 3 + phaseOffset) * 0.4;
+    flagRef.current.rotation.z = angle;
+    flagRef.current.rotation.x = Math.sin(clock.elapsedTime * 2.5 + phaseOffset) * 0.15;
+  });
+  return (
+    <group ref={flagRef} position={[5, 0, 20]}>
+      {/* Stick */}
+      <mesh rotation-x={Math.PI / 2} castShadow receiveShadow>
+        <cylinderGeometry args={[0.3, 0.3, 10, 4]} />
+        <meshLambertMaterial color={0x8d6e63} flatShading />
+      </mesh>
+      {/* Flag cloth */}
+      <mesh position={[0, 0, 6]} castShadow receiveShadow>
+        <boxGeometry args={[4, 0.3, 3]} />
+        <meshLambertMaterial color={color} flatShading />
+      </mesh>
+    </group>
+  );
+}
+
 function SpectatorGroup({ tileIndex }: { tileIndex: number }) {
   const shirtColors = [0xe53935, 0xfdd835, 0x43a047, 0xff9800, 0x7b1fa2, 0x1e88e5, 0xf48fb1];
   const skinTones = [0xffcc99, 0xdeb887, 0xc68642, 0xf5cba7];
@@ -68,6 +94,18 @@ function SpectatorGroup({ tileIndex }: { tileIndex: number }) {
     { x: 0, shirt: shirtColors[Math.abs(tileIndex * 3 + 1) % shirtColors.length], skin: skinTones[Math.abs(tileIndex + 1) % skinTones.length], hasFlag: false },
     { x: 6, shirt: shirtColors[Math.abs(tileIndex * 3 + 2) % shirtColors.length], skin: skinTones[Math.abs(tileIndex + 2) % skinTones.length], hasFlag: true },
   ];
+
+  // Animate the flag-holding arm
+  const armRef0 = useRef(null);
+  const armRef2 = useRef(null);
+  useFrame(({ clock }) => {
+    const wave = Math.sin(clock.elapsedTime * 3) * 0.3;
+    const wave2 = Math.sin(clock.elapsedTime * 3 + 2) * 0.3;
+    if (armRef0.current) armRef0.current.rotation.z = wave;
+    if (armRef2.current) armRef2.current.rotation.z = wave2;
+  });
+
+  const armRefs = [armRef0, null, armRef2];
 
   return (
     <group position-x={tileIndex * tileSize}>
@@ -87,15 +125,18 @@ function SpectatorGroup({ tileIndex }: { tileIndex: number }) {
             <boxGeometry args={[6, 4, 9]} />
             <meshLambertMaterial color={fan.shirt} flatShading />
           </mesh>
-          {/* Arms */}
+          {/* Left arm (static) */}
           <mesh position={[-4.5, 0, 12]} castShadow receiveShadow>
             <boxGeometry args={[2, 2, 7]} />
             <meshLambertMaterial color={fan.skin} flatShading />
           </mesh>
-          <mesh position={[4.5, 0, fan.hasFlag ? 16 : 12]} castShadow receiveShadow>
-            <boxGeometry args={[2, 2, 7]} />
-            <meshLambertMaterial color={fan.skin} flatShading />
-          </mesh>
+          {/* Right arm (waves if holding flag) */}
+          <group ref={fan.hasFlag ? armRefs[i] : undefined} position={[4.5, 0, fan.hasFlag ? 16 : 12]}>
+            <mesh castShadow receiveShadow>
+              <boxGeometry args={[2, 2, 7]} />
+              <meshLambertMaterial color={fan.skin} flatShading />
+            </mesh>
+          </group>
           {/* Head */}
           <mesh position={[0, 0, 17.5]} castShadow receiveShadow>
             <boxGeometry args={[4.5, 4.5, 5]} />
@@ -106,19 +147,8 @@ function SpectatorGroup({ tileIndex }: { tileIndex: number }) {
             <boxGeometry args={[5, 5, 1.5]} />
             <meshLambertMaterial color={i % 2 === 0 ? 0x5d4037 : fan.shirt} flatShading />
           </mesh>
-          {/* Fan flag */}
-          {fan.hasFlag && (
-            <group position={[5, 0, 20]}>
-              <mesh rotation-x={Math.PI / 2} castShadow receiveShadow>
-                <cylinderGeometry args={[0.3, 0.3, 10, 4]} />
-                <meshLambertMaterial color={0x8d6e63} flatShading />
-              </mesh>
-              <mesh position={[0, 0, 6]} castShadow receiveShadow>
-                <boxGeometry args={[4, 0.3, 3]} />
-                <meshLambertMaterial color={fan.shirt} flatShading />
-              </mesh>
-            </group>
-          )}
+          {/* Waving flag */}
+          {fan.hasFlag && <WavingFlag color={fan.shirt} phaseOffset={i * 2} />}
         </group>
       ))}
       {/* Bunting draped between spectator positions */}

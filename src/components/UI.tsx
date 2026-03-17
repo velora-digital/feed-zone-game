@@ -30,6 +30,33 @@ export function Score() {
   return <div id="score">{score}</div>;
 }
 
+export function FeedScore() {
+  const feedCount = useGameStore(state => state.feedCount);
+  if (feedCount === 0) return null;
+
+  const MAX_BIDON_DISPLAY = 10;
+  let items = '';
+  if (feedCount <= MAX_BIDON_DISPLAY) {
+    items = '\u{1F37C}'.repeat(feedCount); // baby bottle as bidon
+  } else {
+    items = '\u{1F37C}'.repeat(MAX_BIDON_DISPLAY) + ` +${feedCount - MAX_BIDON_DISPLAY}`;
+  }
+
+  return (
+    <div id="feed-score" style={{
+      position: 'absolute',
+      top: 60,
+      left: 20,
+      fontSize: '1.5em',
+      color: '#00e676',
+      zIndex: 10,
+      whiteSpace: 'nowrap',
+    }}>
+      {items}
+    </div>
+  );
+}
+
 export function Controls() {
   useEventListeners();
   return (
@@ -47,6 +74,7 @@ export function Controls() {
 export function Result() {
   const status = useGameStore(state => state.status);
   const score = useGameStore(state => state.score);
+  const feedCount = useGameStore(state => state.feedCount);
   const reset = useGameStore(state => state.reset);
   const userData = useUserStore(state => state.userData);
   const setUserName = useUserStore(state => state.setUserName);
@@ -101,6 +129,7 @@ export function Result() {
           <div className="uci-header">UCI COMMUNIQUE</div>
           <p className="uci-notice">{notice}</p>
           <p className="result-score">Distance: {score}m</p>
+          {feedCount > 0 && <p className="result-score" style={{ color: '#00e676' }}>Cyclists fed: {feedCount}</p>}
           <form onSubmit={handleSubmit} id="name-form">
             <label htmlFor="player-name">Soigneur name:</label>
             <input
@@ -121,6 +150,7 @@ export function Result() {
           <p className="uci-notice">{notice}</p>
           {userData && <p className="player-name">Soigneur: {userData.name}</p>}
           <p className="result-score">Distance: {score}m</p>
+          {feedCount > 0 && <p className="result-score" style={{ color: '#00e676' }}>Cyclists fed: {feedCount}</p>}
           <button onClick={handleRetry}>Retry</button>
         </div>
       )}

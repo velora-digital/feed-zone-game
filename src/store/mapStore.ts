@@ -11,6 +11,18 @@ export const useMapStore = create<MapStore>(set => ({
       rows: [...state.rows, ...newRows],
     }));
   },
+  markAnimalFed: (rowIndex: number, animalIndex: number) => {
+    set(state => {
+      const newRows = [...state.rows];
+      const row = newRows[rowIndex];
+      if (row && row.type === 'animal') {
+        const newAnimals = [...row.animals];
+        newAnimals[animalIndex] = { ...newAnimals[animalIndex], fed: true };
+        newRows[rowIndex] = { ...row, animals: newAnimals };
+      }
+      return { rows: newRows };
+    });
+  },
   reset: () => set({ rows: generateRows(INITIAL_ROWS) }),
 }));
 

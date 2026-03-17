@@ -1,17 +1,20 @@
 import { useGameStore } from '@/store/gameStore';
+import { useMapStore } from '@/store/mapStore';
 import { playerState } from '@/logic/playerLogic';
 import { useFrame } from '@react-three/fiber';
 import { playHorn } from '@/sound/playHorn';
 import { playGameOverSound } from '@/sound/playGameOverSound';
+import { playFeedSound } from '@/sound/playFeedSound';
 import { useRef } from 'react';
 import { boundingBoxesIntersect, isRowNear } from '@/logic/collisionUtils';
 
-export function useHitDetection(vehicle, rowIndex) {
+export function useHitDetection(vehicle, rowIndex, needsFeed = false, animalIndex?: number) {
   const endGame = useGameStore(state => state.endGame);
   const cornCount = useGameStore(state => state.cornCount);
   const checkpointRow = useGameStore(state => state.checkpointRow);
   const checkpointTile = useGameStore(state => state.checkpointTile);
   const status = useGameStore(state => state.status);
+  const incrementFeed = useGameStore(state => state.incrementFeed);
   const decrementCorn = () =>
     useGameStore.setState(state => ({
       cornCount: Math.max(0, state.cornCount - 1),
@@ -20,6 +23,10 @@ export function useHitDetection(vehicle, rowIndex) {
   // Sound flags
   const collisionSoundPlayedRef = useRef(false);
   const gameOverSoundPlayedRef = useRef(false);
+  const feedSoundPlayedRef = useRef(false);
+  // Once fed, this cyclist never causes damage (persists across re-renders)
+  const wasFeedableRef = useRef(needsFeed);
+  if (needsFeed) wasFeedableRef.current = true;
 
   useFrame(() => {
     if (!vehicle.current) return;
@@ -27,6 +34,32 @@ export function useHitDetection(vehicle, rowIndex) {
     if (status === 'over') return;
     if (isRowNear(rowIndex, playerState.currentRow)) {
       if (boundingBoxesIntersect(vehicle.current, playerState.ref)) {
+        // Feedable or already-fed cyclist — never causes damage
+        if (needsFeed || wasFeedableRef.current) {
+          if (needsFeed) {
+            // rowIndex is visual position (array index + 1), so subtract 1 for array lookup
+            const arrayIndex = rowIndex - 1;
+            const rows = useMapStore.getState().rows;
+            const row = rows[arrayIndex];
+            if (row && row.type === 'animal' && animalIndex !== undefined) {
+              const animal = row.animals[animalIndex];
+              if (animal && animal.needsFeed && !animal.fed) {
+                // Mark as fed via proper store action (triggers re-render)
+                useMapStore.getState().markAnimalFed(arrayIndex, animalIndex);
+                incrementFeed();
+                if (!feedSoundPlayedRef.current) {
+                  playFeedSound();
+                  feedSoundPlayedRef.current = true;
+                }
+              }
+            }
+          }
+          return; // No damage from feedable/fed cyclists
+        }
+
+        // Reset feed sound flag
+        feedSoundPlayedRef.current = false;
+
         // Play horn sound only if cornCount > 0 and game is not over
         if (cornCount > 0 && !collisionSoundPlayedRef.current) {
           playHorn();
@@ -76,11 +109,13 @@ export function useHitDetection(vehicle, rowIndex) {
         // Reset sound flags if not colliding
         collisionSoundPlayedRef.current = false;
         gameOverSoundPlayedRef.current = false;
+        feedSoundPlayedRef.current = false;
       }
     } else {
       // Reset sound flags if not colliding
       collisionSoundPlayedRef.current = false;
       gameOverSoundPlayedRef.current = false;
+      feedSoundPlayedRef.current = false;
     }
   });
 }

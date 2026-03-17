@@ -20,11 +20,13 @@ export const DEFAULT_GAME_STATE: GameState = {
   status: 'running',
   score: 0,
   cornCount: 0,
+  feedCount: 0,
   checkpointRow: 0,
   checkpointTile: 0,
   isPaused: false,
   playCount: 0,
   totalCornCollected: 0,
+  totalFeeds: 0,
 };
 
 // Camera configuration

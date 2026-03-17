@@ -71,7 +71,7 @@ export function stepCompleted(): void {
   }
 
   if (
-    playerState.currentRow ===
+    playerState.currentRow >=
     mapStore.rows.length - PLAYER_CONFIG.ROWS_AHEAD_THRESHOLD
   ) {
     mapStore.addRows();

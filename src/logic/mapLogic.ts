@@ -75,8 +75,18 @@ export function generateAnimalLaneMetadata(): AnimalRow {
   const direction = randomElement([true, false]);
   const speed = randomElement([120, 150, 180]);
   const animals = Array.from({ length: 2 }, (_, i) => {
-    const species = randomElement(['motorbike', 'commissaire', 'peloton', 'breakaway']);
-    return { index: i, species };
+    // 70% cyclists, 30% motorbikes
+    const species = randomElement([
+      'peloton', 'peloton', 'peloton', 'breakaway', 'breakaway',
+      'peloton', 'breakaway',
+      'motorbike', 'commissaire', 'motorbike',
+    ]);
+    // ~30% of cyclist groups need a feed (not motorbikes)
+    const isCyclist = species === 'peloton' || species === 'breakaway';
+    const needsFeed = isCyclist && Math.random() < 0.3;
+    // Variable pack sizes: 1 (solo), 3 (small group), 6 (big peloton)
+    const packSize = isCyclist && !needsFeed ? randomElement([1, 3, 3, 6]) : undefined;
+    return { index: i, species, needsFeed, packSize };
   });
   return { type: 'animal', direction, speed, animals };
 }

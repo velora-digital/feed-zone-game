@@ -22,6 +22,9 @@ export default function BallLane({ rowIndex, rowData }) {
           speed={rowData.speed}
           color={hazardToColor[animal.species] || 0x2196f3}
           total={rowData.animals.length}
+          needsFeed={animal.needsFeed && !animal.fed}
+          animalIndex={index}
+          packSize={animal.packSize}
         />
       ))}
     </Road>

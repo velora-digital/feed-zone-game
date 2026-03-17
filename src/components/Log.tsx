@@ -40,8 +40,8 @@ export default function Log({ rowIndex, logIndex, direction, speed, total }) {
     Math.abs(rowIndex - playerState.currentRow) <= visibleTilesDistance;
 
   const livery = teamLiveries[logIndex % teamLiveries.length];
-  // Every 2nd vehicle in a lane is a caravan float
-  const isCaravan = logIndex % 2 === 1;
+  // Floats are rare — roughly 1 in 8 vehicles
+  const isCaravan = (logIndex * 7 + rowIndex * 13) % 8 === 0;
 
   return (
     <group ref={carRef} position={[0, 0, 0]}>

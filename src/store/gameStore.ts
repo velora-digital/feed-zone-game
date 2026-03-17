@@ -86,6 +86,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
       event_category: 'game_interaction',
     });
   },
+  incrementFeed: () => {
+    const state = get();
+    const newFeedCount = state.feedCount + 1;
+    const newTotalFeeds = state.totalFeeds + 1;
+    set({ feedCount: newFeedCount, totalFeeds: newTotalFeeds });
+
+    trackEvent('cyclist_fed', {
+      game_id: 'feed_zone',
+      game_name: 'Feed Zone',
+      feed_count: newFeedCount,
+      total_feeds: newTotalFeeds,
+      event_category: 'game_interaction',
+    });
+  },
   setCheckpoint: (row: number, tile: number) =>
     set(() => ({ checkpointRow: row, checkpointTile: tile })),
   setStatus: (status: 'running' | 'over' | 'paused') => set({ status }),
@@ -114,6 +128,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       final_score: state.score,
       corn_collected: state.cornCount,
       total_corn_collected: state.totalCornCollected,
+      feeds: state.feedCount,
+      total_feeds: state.totalFeeds,
       play_count: state.playCount,
       event_category: 'game_interaction',
     });
@@ -148,6 +164,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       ...DEFAULT_GAME_STATE,
       playCount: newPlayCount,
       totalCornCollected: state.totalCornCollected,
+      totalFeeds: state.totalFeeds,
     });
   },
 }));

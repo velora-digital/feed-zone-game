@@ -7,11 +7,13 @@ export interface GameState {
   status: GameStatus;
   score: number;
   cornCount: number;
+  feedCount: number;
   checkpointRow: number;
   checkpointTile: number;
   isPaused: boolean;
   playCount: number;
   totalCornCollected: number;
+  totalFeeds: number;
 }
 
 // Player types
@@ -66,11 +68,19 @@ export interface LogRow {
   logs: Array<{ index: number }>;
 }
 
+export interface Animal {
+  index: number;
+  species: string;
+  needsFeed?: boolean;
+  fed?: boolean;
+  packSize?: number;
+}
+
 export interface AnimalRow {
   type: 'animal';
   direction: boolean;
   speed: number;
-  animals: Array<{ index: number; species: string }>;
+  animals: Animal[];
 }
 
 export interface GrassRow {
@@ -84,15 +94,18 @@ export interface GameStore {
   status: GameStatus;
   score: number;
   cornCount: number;
+  feedCount: number;
   checkpointRow: number;
   checkpointTile: number;
   isPaused: boolean;
   playCount: number;
   totalCornCollected: number;
+  totalFeeds: number;
   pause: () => void;
   resume: () => void;
   setCheckpoint: (row: number, tile: number) => void;
   incrementCorn: () => void;
+  incrementFeed: () => void;
   updateScore: (row: number) => void;
   setStatus: (status: GameStatus) => void;
   setPaused: (paused: boolean) => void;
@@ -103,6 +116,7 @@ export interface GameStore {
 export interface MapStore {
   rows: RowData[];
   addRows: () => void;
+  markAnimalFed: (rowIndex: number, animalIndex: number) => void;
   reset: () => void;
 }
 
