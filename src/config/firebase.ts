@@ -15,10 +15,16 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+let app: ReturnType<typeof initializeApp> | null = null;
+let database: ReturnType<typeof getDatabase> | null = null;
+let firestore: ReturnType<typeof getFirestore> | null = null;
 
-// Initialize Realtime Database
-export const database = getDatabase(app);
+try {
+  app = initializeApp(firebaseConfig);
+  database = getDatabase(app);
+  firestore = getFirestore(app);
+} catch (error) {
+  console.warn('Firebase initialization failed:', error);
+}
 
-// Initialize Firestore
-export const firestore = getFirestore(app);
+export { database, firestore };

@@ -110,14 +110,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     // Save score to Firebase if user has provided their name
     const userData = useUserStore.getState().userData;
-    const score = get().score;
+    const totalScore = get().score + get().feedCount * 10;
 
-    if (userData && score > 0) {
+    if (userData && totalScore > 0) {
       const leaderboardStore = useLeaderboardStore.getState();
       leaderboardStore.addEntry({
         id: userData.id,
         name: userData.name,
-        score: score,
+        score: totalScore,
       }).catch(error => {
         console.error('Failed to save score to leaderboard:', error);
       });

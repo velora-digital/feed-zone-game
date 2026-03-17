@@ -15,12 +15,20 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const db = getFirestore(app);
-let analytics: any; // Use any for analytics to avoid strict type issues with getAnalytics
-if (typeof window !== 'undefined') {
-  analytics = getAnalytics(app);
+let app: ReturnType<typeof initializeApp> | null = null;
+let auth: ReturnType<typeof getAuth> | null = null;
+let db: ReturnType<typeof getFirestore> | null = null;
+let analytics: any = null;
+
+try {
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  auth = getAuth(app);
+  db = getFirestore(app);
+  if (typeof window !== 'undefined') {
+    analytics = getAnalytics(app);
+  }
+} catch (error) {
+  console.warn('Firebase (utils) initialization failed:', error);
 }
 
 let currentUser: User | null = null;
@@ -48,8 +56,12 @@ export interface UserGameData {
  * Creates anonymous user if not already authenticated
  */
 export async function initializeFirebaseAuth(): Promise<void> {
+  if (!auth) {
+    console.warn('Firebase auth not initialized, skipping auth setup');
+    return;
+  }
   return new Promise((resolve) => {
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth!, async (user) => {
       if (user) {
         currentUser = user;
         console.log('Firebase User:', currentUser.uid, currentUser.isAnonymous ? '(Anonymous)' : '(Authenticated)');
@@ -57,7 +69,7 @@ export async function initializeFirebaseAuth(): Promise<void> {
       } else {
         // No user signed in, sign in anonymously
         try {
-          const userCredential = await signInAnonymously(auth);
+          const userCredential = await signInAnonymously(auth!);
           currentUser = userCredential.user;
           console.log('Signed in anonymously:', currentUser.uid);
           resolve();

@@ -3,6 +3,8 @@ import { useGameStore } from '@/store/gameStore';
 import { useUserStore } from '@/store/userStore';
 import { useLeaderboardStore } from '@/store/leaderboardStore';
 import { queueMove } from '@/logic/playerLogic';
+import { pauseBackgroundMusic, resumeBackgroundMusic } from '@/sound/playBackgroundMusic';
+import { fetchTopScores, LeaderboardRow } from '@/utils/leaderboard';
 import { UI_CONFIG } from '@/utils/constants';
 
 const UCI_NOTICES = [
@@ -30,17 +32,25 @@ export function Score() {
   return <div id="score">{score}</div>;
 }
 
+function BidonIcon() {
+  return (
+    <svg width="20" height="28" viewBox="0 0 20 28" style={{ display: 'inline-block', verticalAlign: 'middle', margin: '0 1px' }}>
+      {/* Cap / nozzle */}
+      <rect x="7" y="0" width="6" height="5" rx="1" fill="#eeeeee" />
+      {/* Bottle body */}
+      <rect x="4" y="5" width="12" height="20" rx="3" fill="#29b6f6" />
+      {/* Label band */}
+      <rect x="4" y="14" width="12" height="4" fill="#0288d1" />
+    </svg>
+  );
+}
+
 export function FeedScore() {
   const feedCount = useGameStore(state => state.feedCount);
   if (feedCount === 0) return null;
 
   const MAX_BIDON_DISPLAY = 10;
-  let items = '';
-  if (feedCount <= MAX_BIDON_DISPLAY) {
-    items = '\u{1F37C}'.repeat(feedCount); // baby bottle as bidon
-  } else {
-    items = '\u{1F37C}'.repeat(MAX_BIDON_DISPLAY) + ` +${feedCount - MAX_BIDON_DISPLAY}`;
-  }
+  const shown = Math.min(feedCount, MAX_BIDON_DISPLAY);
 
   return (
     <div id="feed-score" style={{
@@ -51,8 +61,13 @@ export function FeedScore() {
       color: '#00e676',
       zIndex: 10,
       whiteSpace: 'nowrap',
+      display: 'flex',
+      alignItems: 'center',
     }}>
-      {items}
+      {Array.from({ length: shown }, (_, i) => <BidonIcon key={i} />)}
+      {feedCount > MAX_BIDON_DISPLAY && (
+        <span style={{ fontSize: '0.6em', marginLeft: 4 }}>+{feedCount - MAX_BIDON_DISPLAY}</span>
+      )}
     </div>
   );
 }
@@ -67,6 +82,78 @@ export function Controls() {
         <button onClick={() => queueMove('backward')}>&#9660;</button>
         <button onClick={() => queueMove('right')}>&#9654;</button>
       </div>
+    </div>
+  );
+}
+
+export function MusicToggle() {
+  const [muted, setMuted] = useState(false);
+
+  const toggle = () => {
+    if (muted) {
+      resumeBackgroundMusic();
+    } else {
+      pauseBackgroundMusic();
+    }
+    setMuted(!muted);
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      id="music-toggle"
+      aria-label={muted ? 'Unmute music' : 'Mute music'}
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+        <path d="M3 9v6h4l5 5V4L7 9H3z" />
+        {muted ? (
+          <path d="M16.5 12l4.5-4.5-1.4-1.4L15 10.6l-4.5-4.5-1.4 1.4L13.6 12l-4.5 4.5 1.4 1.4L15 13.4l4.5 4.5 1.4-1.4L16.5 12z" />
+        ) : (
+          <>
+            <path d="M14 3.2v2.1c2.9.9 5 3.5 5 6.7s-2.1 5.8-5 6.7v2.1c4-.9 7-4.5 7-8.8s-3-7.9-7-8.8z" />
+            <path d="M14 7.9v8.2c1.5-.7 2.5-2.2 2.5-4.1s-1-3.4-2.5-4.1z" />
+          </>
+        )}
+      </svg>
+    </button>
+  );
+}
+
+function Leaderboard() {
+  const [scores, setScores] = useState<LeaderboardRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    fetchTopScores(10)
+      .then(rows => {
+        setScores(rows);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <p className="leaderboard-loading">Loading scores...</p>;
+  if (error) return null;
+
+  return (
+    <div className="leaderboard">
+      <h3 className="leaderboard-title">Top Soigneurs</h3>
+      {scores.length === 0 ? (
+        <p className="leaderboard-loading">No scores yet — be the first!</p>
+      ) : (
+        <ol className="leaderboard-list">
+          {scores.map((row, i) => (
+            <li key={i} className="leaderboard-row">
+              <span className="leaderboard-name">{row.name}</span>
+              <span className="leaderboard-score">{row.score}</span>
+            </li>
+          ))}
+        </ol>
+      )}
     </div>
   );
 }
@@ -94,6 +181,9 @@ export function Result() {
     }
   }, [status]);
 
+  const feedBonus = feedCount * 10;
+  const totalScore = score + feedBonus;
+
   if (status !== 'over') return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -101,11 +191,11 @@ export function Result() {
     const name = nameInput.trim();
     const tempUserId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     setUserName(name);
-    if (score > 0) {
+    if (totalScore > 0) {
       addEntry({
         id: tempUserId,
         name: name,
-        score: score,
+        score: totalScore,
       }).catch(error => {
         console.error('Failed to save score:', error);
       });
@@ -128,8 +218,15 @@ export function Result() {
         <div id="result">
           <div className="uci-header">UCI COMMUNIQUE</div>
           <p className="uci-notice">{notice}</p>
-          <p className="result-score">Distance: {score}m</p>
-          {feedCount > 0 && <p className="result-score" style={{ color: '#00e676' }}>Cyclists fed: {feedCount}</p>}
+          <div className="score-breakdown">
+            <p className="result-score">Distance: {score}m</p>
+            {feedCount > 0 && (
+              <p className="result-score" style={{ color: '#00e676' }}>
+                Feeds: {feedCount} x 10 = +{feedBonus}
+              </p>
+            )}
+            <p className="result-score total-score">Total: {totalScore}</p>
+          </div>
           <form onSubmit={handleSubmit} id="name-form">
             <label htmlFor="player-name">Soigneur name:</label>
             <input
@@ -143,14 +240,23 @@ export function Result() {
             />
             <button type="submit">Go!</button>
           </form>
+          <Leaderboard />
         </div>
       ) : (
         <div id="result">
           <div className="uci-header">UCI COMMUNIQUE</div>
           <p className="uci-notice">{notice}</p>
           {userData && <p className="player-name">Soigneur: {userData.name}</p>}
-          <p className="result-score">Distance: {score}m</p>
-          {feedCount > 0 && <p className="result-score" style={{ color: '#00e676' }}>Cyclists fed: {feedCount}</p>}
+          <div className="score-breakdown">
+            <p className="result-score">Distance: {score}m</p>
+            {feedCount > 0 && (
+              <p className="result-score" style={{ color: '#00e676' }}>
+                Feeds: {feedCount} x 10 = +{feedBonus}
+              </p>
+            )}
+            <p className="result-score total-score">Total: {totalScore}</p>
+          </div>
+          <Leaderboard />
           <button onClick={handleRetry}>Retry</button>
         </div>
       )}

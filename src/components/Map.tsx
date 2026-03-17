@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useFrame } from '@react-three/fiber';
 import { useMapStore } from '@/store/mapStore';
 import BallLane from './BallLane';
 import Corn from './Corn';
@@ -11,11 +12,18 @@ import { RowProps, ForestProps, RowData, ForestRow } from '@/types';
 
 export default function Map() {
   const rows = useMapStore(state => state.rows);
+  // Track player row in React state so Map re-renders as the player advances
+  const [currentRow, setCurrentRow] = useState(0);
+  useFrame(() => {
+    if (playerState.currentRow !== currentRow) {
+      setCurrentRow(playerState.currentRow);
+    }
+  });
   // Only render rows within [-visibleTilesDistance, +visibleTilesDistance] of the player's current row
-  const minVisible = Math.max(0, playerState.currentRow - visibleTilesDistance);
+  const minVisible = Math.max(0, currentRow - visibleTilesDistance);
   const maxVisible = Math.min(
     rows.length - 1,
-    playerState.currentRow + visibleTilesDistance
+    currentRow + visibleTilesDistance
   );
   const visibleRows = rows
     .slice(minVisible, maxVisible + 1)
