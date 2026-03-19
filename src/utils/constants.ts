@@ -19,13 +19,12 @@ import { GameState, GameStatus } from '@/types';
 export const DEFAULT_GAME_STATE: GameState = {
   status: 'running',
   score: 0,
-  cornCount: 0,
+  musetteCount: 0,
   feedCount: 0,
   checkpointRow: 0,
   checkpointTile: 0,
-  isPaused: false,
   playCount: 0,
-  totalCornCollected: 0,
+  totalMusettesCollected: 0,
   totalFeeds: 0,
 };
 
@@ -42,8 +41,8 @@ export const CAMERA_CONFIG: CameraConfig = {
 
 // UI configuration
 export interface UIConfig {
-  MAX_CORN_DISPLAY: number;
-  CORN_SCORE_STYLE: {
+  MAX_MUSETTE_DISPLAY: number;
+  MUSETTE_SCORE_STYLE: {
     position: string;
     top: number;
     right: number;
@@ -55,8 +54,8 @@ export interface UIConfig {
 }
 
 export const UI_CONFIG: UIConfig = {
-  MAX_CORN_DISPLAY: 20,
-  CORN_SCORE_STYLE: {
+  MAX_MUSETTE_DISPLAY: 20,
+  MUSETTE_SCORE_STYLE: {
     position: 'absolute',
     top: 20,
     right: 20,
@@ -79,3 +78,5 @@ export const PLAYER_CONFIG: PlayerConfig = {
 };
 
 export const visibleTilesDistance = 10;
+
+export const FEED_BONUS_MULTIPLIER = 10;

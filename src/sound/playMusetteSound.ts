@@ -3,7 +3,7 @@ import { getAudioContext } from './playGameOverSound';
 let lastPlay = 0;
 const DEBOUNCE_MS = 100;
 
-export async function playCornSound() {
+export async function playMusetteSound() {
   const now = performance.now();
   if (now - lastPlay < DEBOUNCE_MS) return;
   lastPlay = now;

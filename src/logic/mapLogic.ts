@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { minTileIndex, maxTileIndex } from '@/utils/constants';
-import { RowData, ForestRow, LogRow, AnimalRow, GrassRow, Tree } from '@/types';
+import { RowData, VergRow, ConvoyRow, RaceLaneRow, GrassRow, RoadsideObject } from '@/types';
 
 export function generateRows(amount: number): RowData[] {
   const rows = [];
@@ -8,7 +8,7 @@ export function generateRows(amount: number): RowData[] {
     if (i === 0) {
       rows.push({ type: 'grass' });
     } else if (i === 1) {
-      rows.push(generateForesMetadata());
+      rows.push(generateVergeMetadata());
     } else {
       const rowData = generateRow();
       rows.push(rowData);
@@ -18,17 +18,17 @@ export function generateRows(amount: number): RowData[] {
 }
 
 export function generateRow(): RowData {
-  const type = randomElement(['log', 'animal', 'forest']);
-  if (type === 'log') return generateLogLaneMetadata();
-  if (type === 'animal') return generateAnimalLaneMetadata();
-  return generateForesMetadata();
+  const type = randomElement(['convoy', 'racelane', 'verge']);
+  if (type === 'convoy') return generateConvoyMetadata();
+  if (type === 'racelane') return generateRaceLaneMetadata();
+  return generateVergeMetadata();
 }
 
 export function randomElement<T>(array: T[]): T {
   return array[Math.floor(Math.random() * array.length)];
 }
 
-export function generateForesMetadata(): ForestRow {
+export function generateVergeMetadata(): VergRow {
   const occupiedTiles = new Set();
   // More roadside elements for a crowded feed zone feel
   const count = THREE.MathUtils.randInt(4, 6);
@@ -41,40 +41,40 @@ export function generateForesMetadata(): ForestRow {
     const height = randomElement([20, 45, 60]);
     return { tileIndex, height };
   });
-  // Corn: randomly place on tree-free tiles
+  // Musettes: randomly place on tree-free tiles
   const treeTiles = new Set(trees.map(t => t.tileIndex));
-  const possibleCornTiles = [];
+  const possibleMusetteTiles = [];
   for (let i = minTileIndex; i <= maxTileIndex; i++) {
-    if (!treeTiles.has(i)) possibleCornTiles.push(i);
+    if (!treeTiles.has(i)) possibleMusetteTiles.push(i);
   }
-  // Place 0-2 corn per row
-  const corn = [];
-  const cornCount = THREE.MathUtils.randInt(
+  // Place 0-2 musettes per row
+  const musettePositions = [];
+  const musetteCount = THREE.MathUtils.randInt(
     0,
-    Math.min(2, possibleCornTiles.length)
+    Math.min(2, possibleMusetteTiles.length)
   );
-  for (let i = 0; i < cornCount; i++) {
-    if (possibleCornTiles.length === 0) break;
-    const idx = THREE.MathUtils.randInt(0, possibleCornTiles.length - 1);
-    corn.push(possibleCornTiles[idx]);
-    possibleCornTiles.splice(idx, 1);
+  for (let i = 0; i < musetteCount; i++) {
+    if (possibleMusetteTiles.length === 0) break;
+    const idx = THREE.MathUtils.randInt(0, possibleMusetteTiles.length - 1);
+    musettePositions.push(possibleMusetteTiles[idx]);
+    possibleMusetteTiles.splice(idx, 1);
   }
-  return { type: 'forest', trees, corn };
+  return { type: 'verge', trees, musettePositions };
 }
 
-export function generateLogLaneMetadata(): LogRow {
+export function generateConvoyMetadata(): ConvoyRow {
   const direction = randomElement([true, false]);
   const speed = randomElement([110, 140, 170]);
-  // For logs, just store N logs; position will be calculated in animation
-  const logCount = THREE.MathUtils.randInt(3, 5);
-  const logs = Array.from({ length: logCount }, (_, i) => ({ index: i }));
-  return { type: 'log', direction, speed, logs };
+  // For vehicles, just store N vehicles; position will be calculated in animation
+  const vehicleCount = THREE.MathUtils.randInt(3, 5);
+  const vehicles = Array.from({ length: vehicleCount }, (_, i) => ({ index: i }));
+  return { type: 'convoy', direction, speed, vehicles };
 }
 
-export function generateAnimalLaneMetadata(): AnimalRow {
+export function generateRaceLaneMetadata(): RaceLaneRow {
   const direction = randomElement([true, false]);
   const speed = randomElement([120, 150, 180]);
-  const animals = Array.from({ length: 2 }, (_, i) => {
+  const entities = Array.from({ length: 2 }, (_, i) => {
     // 70% cyclists, 30% motorbikes
     const species = randomElement([
       'peloton', 'peloton', 'peloton', 'breakaway', 'breakaway',
@@ -88,5 +88,5 @@ export function generateAnimalLaneMetadata(): AnimalRow {
     const packSize = isCyclist && !needsFeed ? randomElement([1, 3, 3, 6]) : undefined;
     return { index: i, species, needsFeed, packSize };
   });
-  return { type: 'animal', direction, speed, animals };
+  return { type: 'racelane', direction, speed, entities };
 }

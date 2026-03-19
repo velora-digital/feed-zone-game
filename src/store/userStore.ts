@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { UserStore, UserData } from '../types';
 
-const USER_STORAGE_KEY = 'crossy-road-user';
+const USER_STORAGE_KEY = 'feed-zone-user';
 
 // Generate a unique ID using timestamp and random number
 function generateUserId(): string {

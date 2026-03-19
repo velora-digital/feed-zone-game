@@ -1,12 +1,14 @@
 {
-  "name": "three-js-crossy-road",
+  "name": "feed-zone-game",
   "version": "1.0.0",
-  "description": "Crossy Road - 2.5D Runner Game",
-  "author": "https://github.com/davidnekovarcz",
+  "description": "Feed Zone - A cycling mini-game built with React Three Fiber",
+  "author": "Velora",
   "license": "MIT",
   "main": "index.js",
   "keywords": [
-    "crossy-road",
+    "cycling",
+    "feed-zone",
+    "velora",
     "game",
     "2d",
     "r3f",
@@ -18,7 +20,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "node server.js",
+    "preview": "vite preview",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
     "lint:check": "eslint src --ext .ts,.tsx,.js,.jsx",
     "format": "prettier --write src/**/*.{ts,tsx,js,jsx,json,css,md}",
@@ -29,8 +31,6 @@
   "dependencies": {
     "@react-three/drei": "^10.4.2",
     "@react-three/fiber": "^9.1.4",
-    "express": "^4.18.2",
-    "firebase": "^12.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "three": "^0.178.0",

@@ -51,7 +51,8 @@ const Scene = ({ children }) => {
       frameloop="always"
       onCreated={throttleRender}
     >
-      <ambientLight />
+      <color attach="background" args={['#87CEEB']} />
+      <ambientLight intensity={0.4} />
       <AudioInitializer />
       {children}
     </Canvas>

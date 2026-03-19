@@ -53,7 +53,7 @@ export default function Corn({
 
 function EnergyGel() {
   return (
-    <group>
+    <group rotation-x={0.3}>
       {/* Gel packet body */}
       <mesh castShadow receiveShadow>
         <boxGeometry args={[3, 1.5, 5]} />
@@ -72,12 +72,12 @@ function SpareBidon() {
   return (
     <group>
       {/* Bidon bottle */}
-      <mesh castShadow receiveShadow>
+      <mesh castShadow receiveShadow rotation-x={Math.PI / 2}>
         <cylinderGeometry args={[1.8, 1.8, 5, 8]} />
         <meshLambertMaterial color={0x00e676} flatShading />
       </mesh>
       {/* Bidon cap / nozzle */}
-      <mesh position={[0, 0, 3.2]} castShadow receiveShadow>
+      <mesh position={[0, 0, 3.2]} castShadow receiveShadow rotation-x={Math.PI / 2}>
         <cylinderGeometry args={[0.7, 0.9, 1.5, 8]} />
         <meshLambertMaterial color={0xeeeeee} flatShading />
       </mesh>

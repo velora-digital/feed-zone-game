@@ -8,16 +8,16 @@ import { playFeedSound } from '@/sound/playFeedSound';
 import { useRef } from 'react';
 import { boundingBoxesIntersect, isRowNear } from '@/logic/collisionUtils';
 
-export function useHitDetection(vehicle, rowIndex, needsFeed = false, animalIndex?: number) {
+export function useHitDetection(vehicle, rowIndex, needsFeed = false, entityIndex?: number) {
   const endGame = useGameStore(state => state.endGame);
-  const cornCount = useGameStore(state => state.cornCount);
+  const musetteCount = useGameStore(state => state.musetteCount);
   const checkpointRow = useGameStore(state => state.checkpointRow);
   const checkpointTile = useGameStore(state => state.checkpointTile);
   const status = useGameStore(state => state.status);
   const incrementFeed = useGameStore(state => state.incrementFeed);
-  const decrementCorn = () =>
+  const decrementMusette = () =>
     useGameStore.setState(state => ({
-      cornCount: Math.max(0, state.cornCount - 1),
+      musetteCount: Math.max(0, state.musetteCount - 1),
     }));
 
   // Sound flags
@@ -41,11 +41,11 @@ export function useHitDetection(vehicle, rowIndex, needsFeed = false, animalInde
             const arrayIndex = rowIndex - 1;
             const rows = useMapStore.getState().rows;
             const row = rows[arrayIndex];
-            if (row && row.type === 'animal' && animalIndex !== undefined) {
-              const animal = row.animals[animalIndex];
-              if (animal && animal.needsFeed && !animal.fed) {
+            if (row && row.type === 'racelane' && entityIndex !== undefined) {
+              const entity = row.entities[entityIndex];
+              if (entity && entity.needsFeed && !entity.fed) {
                 // Mark as fed via proper store action (triggers re-render)
-                useMapStore.getState().markAnimalFed(arrayIndex, animalIndex);
+                useMapStore.getState().markEntityFed(arrayIndex, entityIndex);
                 incrementFeed();
                 if (!feedSoundPlayedRef.current) {
                   playFeedSound();
@@ -60,8 +60,8 @@ export function useHitDetection(vehicle, rowIndex, needsFeed = false, animalInde
         // Reset feed sound flag
         feedSoundPlayedRef.current = false;
 
-        // Play horn sound only if cornCount > 0 and game is not over
-        if (cornCount > 0 && !collisionSoundPlayedRef.current) {
+        // Play horn sound only if musetteCount > 0 and game is not over
+        if (musetteCount > 0 && !collisionSoundPlayedRef.current) {
           playHorn();
           collisionSoundPlayedRef.current = true;
         }
@@ -72,10 +72,10 @@ export function useHitDetection(vehicle, rowIndex, needsFeed = false, animalInde
             playerState.shake = false;
           }, 600); // shake duration in ms
         }
-        if (cornCount > 0) {
+        if (musetteCount > 0) {
           // Reset collision sound flag for next collision
           collisionSoundPlayedRef.current = false;
-          decrementCorn();
+          decrementMusette();
           // Play horn sound on respawn only if game is not over
           if (status !== 'over') {
             playHorn();

@@ -2,11 +2,10 @@ import { create } from 'zustand';
 import { resetPlayerStore } from '@/logic/playerLogic';
 import { useMapStore } from '@/store/mapStore';
 import { useUserStore } from '@/store/userStore';
-import { useLeaderboardStore } from '@/store/leaderboardStore';
 import { DEFAULT_GAME_STATE } from '@/utils/constants';
 import { GameStore } from '@/types';
-import { trackGamePlayed, trackMaxLevel } from '@/utils/analytics';
-import { initializeFirebaseAuth } from '@/utils/firebase';
+
+const FEED_BONUS_MULTIPLIER = 10;
 
 // GA tracking helper
 const trackEvent = (
@@ -18,23 +17,14 @@ const trackEvent = (
   }
 };
 
-// Initialize Firebase and track game played on initial load
-if (typeof window !== 'undefined') {
-  const initializeAndTrack = async () => {
-    // Initialize Firebase auth (creates anonymous user if needed)
-    await initializeFirebaseAuth();
-    
-    // Track game play
-    await trackGamePlayed();
-  };
-  
-  initializeAndTrack();
-}
-
 export const useGameStore = create<GameStore>((set, get) => ({
   ...DEFAULT_GAME_STATE,
+  status: 'idle' as const,
   playCount: 0,
-  totalCornCollected: 0,
+  totalMusettesCollected: 0,
+  startGame: () => {
+    set({ status: 'running' });
+  },
   pause: () => {
     set({ isPaused: true });
     trackEvent('game_pause', {
@@ -56,33 +46,28 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const newScore = Math.max(rowIndex, state.score);
     set({ score: newScore });
 
-    // Track max level achievement
-    if (newScore > state.score) {
-      trackMaxLevel(newScore);
-    }
-
     // Track score milestones
     if (newScore > state.score && newScore % 10 === 0) {
       trackEvent('score_milestone', {
-        game_id: 'crossy_road',
-        game_name: 'Crossy Road',
+        game_id: 'feed_zone',
+        game_name: 'Feed Zone',
         score: newScore,
         milestone: newScore,
         event_category: 'game_interaction',
       });
     }
   },
-  incrementCorn: () => {
+  collectMusette: () => {
     const state = get();
-    const newCornCount = state.cornCount + 1;
-    const newTotalCorn = state.totalCornCollected + 1;
-    set({ cornCount: newCornCount, totalCornCollected: newTotalCorn });
+    const newMusetteCount = state.musetteCount + 1;
+    const newTotalMusettes = state.totalMusettesCollected + 1;
+    set({ musetteCount: newMusetteCount, totalMusettesCollected: newTotalMusettes });
 
-    trackEvent('corn_collected', {
+    trackEvent('musette_collected', {
       game_id: 'feed_zone',
       game_name: 'Feed Zone',
-      corn_count: newCornCount,
-      total_corn_collected: newTotalCorn,
+      musette_count: newMusetteCount,
+      total_musettes_collected: newTotalMusettes,
       event_category: 'game_interaction',
     });
   },
@@ -108,26 +93,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = get();
     set({ status: 'over' });
 
-    // Save score to Firebase if user has provided their name
-    const userData = useUserStore.getState().userData;
-    const totalScore = get().score + get().feedCount * 10;
+    const totalScore = get().score + get().feedCount * FEED_BONUS_MULTIPLIER;
 
-    if (userData && totalScore > 0) {
-      const leaderboardStore = useLeaderboardStore.getState();
-      leaderboardStore.addEntry({
-        id: userData.id,
-        name: userData.name,
-        score: totalScore,
-      }).catch(error => {
-        console.error('Failed to save score to leaderboard:', error);
-      });
-    }
     trackEvent('game_over', {
       game_id: 'feed_zone',
       game_name: 'Feed Zone',
       final_score: state.score,
-      corn_collected: state.cornCount,
-      total_corn_collected: state.totalCornCollected,
+      musettes_collected: state.musetteCount,
+      total_musettes_collected: state.totalMusettesCollected,
       feeds: state.feedCount,
       total_feeds: state.totalFeeds,
       play_count: state.playCount,
@@ -140,9 +113,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         type: 'GAME_OVER',
         gameName: 'Feed Zone',
         score: state.score,
-        level: undefined,
-        cornCollected: state.cornCount,
-        totalCornCollected: state.totalCornCollected
+        musettesCollected: state.musetteCount,
+        totalMusettesCollected: state.totalMusettesCollected,
       }, '*');
     }
   },
@@ -162,8 +134,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     resetPlayerStore();
     set({
       ...DEFAULT_GAME_STATE,
+      status: 'idle' as const,
       playCount: newPlayCount,
-      totalCornCollected: state.totalCornCollected,
+      totalMusettesCollected: state.totalMusettesCollected,
       totalFeeds: state.totalFeeds,
     });
   },

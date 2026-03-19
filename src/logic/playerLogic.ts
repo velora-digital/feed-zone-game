@@ -1,7 +1,7 @@
 import { useGameStore } from '@/store/gameStore';
 import { useMapStore } from '@/store/mapStore';
 import { minTileIndex, maxTileIndex, PLAYER_CONFIG } from '@/utils/constants';
-import { playCornSound } from '@/sound/playCornSound';
+import { playMusetteSound } from '@/sound/playMusetteSound';
 import { MoveDirection, PlayerPosition, PlayerState } from '@/types';
 
 export const playerState: PlayerState = {
@@ -38,32 +38,32 @@ export function stepCompleted(): void {
   if (direction === 'left') playerState.currentTile -= 1;
   if (direction === 'right') playerState.currentTile += 1;
 
-  // Corn collection logic
+  // Musette collection logic
   const mapStore = useMapStore.getState();
   const gameStore = useGameStore.getState();
   const rowIdx = playerState.currentRow - 1;
   const tileIdx = playerState.currentTile;
   const rows = mapStore.rows;
-  if (rows[rowIdx] && rows[rowIdx].type === 'forest' && rows[rowIdx].corn) {
-    const cornIdx = rows[rowIdx].corn.indexOf(tileIdx);
-    if (cornIdx !== -1) {
+  if (rows[rowIdx] && rows[rowIdx].type === 'verge' && rows[rowIdx].musettePositions) {
+    const musetteIdx = rows[rowIdx].musettePositions.indexOf(tileIdx);
+    if (musetteIdx !== -1) {
       useMapStore.setState(state => {
         const newRows = state.rows.slice();
         const row = { ...newRows[rowIdx] };
         // Copy arrays before mutating
-        row.corn = row.corn.slice();
+        row.musettePositions = row.musettePositions.slice();
         row.collectedCorn = row.collectedCorn ? row.collectedCorn.slice() : [];
         // Mutate the copies
         row.collectedCorn.push({
           tileIndex: tileIdx,
           start: performance.now(),
         });
-        row.corn.splice(cornIdx, 1);
+        row.musettePositions.splice(musetteIdx, 1);
         newRows[rowIdx] = row;
         return { rows: newRows };
       });
-      playCornSound();
-      useGameStore.getState().incrementCorn();
+      playMusetteSound();
+      useGameStore.getState().collectMusette();
       useGameStore
         .getState()
         .setCheckpoint(playerState.currentRow, playerState.currentTile);
@@ -130,7 +130,7 @@ export function endsUpInValidPosition(
   const finalRow = useMapStore.getState().rows[finalPosition.rowIndex - 1];
   if (
     finalRow &&
-    finalRow.type === 'forest' &&
+    finalRow.type === 'verge' &&
     finalRow.trees.some(tree => tree.tileIndex === finalPosition.tileIndex)
   ) {
     return false;

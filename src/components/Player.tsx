@@ -53,8 +53,8 @@ export function SoigneurBody() {
   useFrame(() => {
     if (!group.current) return;
     const player = group.current;
-    // Animate squash/stretch
-    const z = player.position.z;
+    // Animate squash/stretch — read from this group's z which is set by usePlayerAnimation
+    const z = group.current.position.z;
     const progress = Math.min(1, Math.abs(z) / 12);
     const scaleY = 1 + 0.3 * progress;
     const scaleX = 1 - 0.15 * progress;

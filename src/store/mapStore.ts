@@ -11,14 +11,14 @@ export const useMapStore = create<MapStore>(set => ({
       rows: [...state.rows, ...newRows],
     }));
   },
-  markAnimalFed: (rowIndex: number, animalIndex: number) => {
+  markEntityFed: (rowIndex: number, entityIndex: number) => {
     set(state => {
       const newRows = [...state.rows];
       const row = newRows[rowIndex];
-      if (row && row.type === 'animal') {
-        const newAnimals = [...row.animals];
-        newAnimals[animalIndex] = { ...newAnimals[animalIndex], fed: true };
-        newRows[rowIndex] = { ...row, animals: newAnimals };
+      if (row && row.type === 'racelane') {
+        const newEntities = [...row.entities];
+        newEntities[entityIndex] = { ...newEntities[entityIndex], fed: true };
+        newRows[rowIndex] = { ...row, entities: newEntities };
       }
       return { rows: newRows };
     });

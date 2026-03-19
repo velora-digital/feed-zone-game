@@ -8,7 +8,7 @@ import LogLane from './LogLane';
 import Tree from './Tree';
 import { playerState } from '@/logic/playerLogic';
 import { visibleTilesDistance } from '@/utils/constants';
-import { RowProps, ForestProps, RowData, ForestRow } from '@/types';
+import { RowProps, ForestProps, RowData, VergRow } from '@/types';
 
 export default function Map() {
   const rows = useMapStore(state => state.rows);
@@ -48,11 +48,11 @@ export default function Map() {
 
 export function Row({ rowIndex, rowData }: RowProps) {
   switch (rowData.type) {
-    case 'forest':
+    case 'verge':
       return <Forest rowIndex={rowIndex} rowData={rowData} />;
-    case 'log':
+    case 'convoy':
       return <LogLane rowIndex={rowIndex} rowData={rowData} />;
-    case 'animal':
+    case 'racelane':
       return <BallLane rowIndex={rowIndex} rowData={rowData} />;
     case 'grass':
       return <Grass rowIndex={rowIndex} />;
@@ -67,9 +67,9 @@ export function Forest({ rowIndex, rowData }: ForestProps) {
       {rowData.trees.map((tree, index) => (
         <Tree key={index} tileIndex={tree.tileIndex} height={tree.height} />
       ))}
-      {rowData.corn &&
-        rowData.corn.map(tileIndex => (
-          <Corn key={'corn-' + tileIndex} tileIndex={tileIndex} />
+      {rowData.musettePositions &&
+        rowData.musettePositions.map(tileIndex => (
+          <Corn key={'musette-' + tileIndex} tileIndex={tileIndex} />
         ))}
       {rowData.collectedCorn &&
         rowData.collectedCorn.map(c => (

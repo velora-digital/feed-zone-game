@@ -1,18 +1,17 @@
 import * as THREE from 'three';
 
 // Game state types
-export type GameStatus = 'running' | 'over' | 'paused';
+export type GameStatus = 'idle' | 'running' | 'over' | 'paused';
 
 export interface GameState {
   status: GameStatus;
   score: number;
-  cornCount: number;
+  musetteCount: number;
   feedCount: number;
   checkpointRow: number;
   checkpointTile: number;
-  isPaused: boolean;
   playCount: number;
-  totalCornCollected: number;
+  totalMusettesCollected: number;
   totalFeeds: number;
 }
 
@@ -37,9 +36,9 @@ export interface PlayerState {
 }
 
 // Map types
-export type RowType = 'forest' | 'log' | 'animal' | 'grass';
+export type RowType = 'verge' | 'convoy' | 'racelane' | 'grass';
 
-export interface Tree {
+export interface RoadsideObject {
   tileIndex: number;
   height: number;
 }
@@ -54,21 +53,21 @@ export interface CollectedCorn {
   start: number;
 }
 
-export interface ForestRow {
-  type: 'forest';
-  trees: Tree[];
-  corn?: number[];
+export interface VergRow {
+  type: 'verge';
+  trees: RoadsideObject[];
+  musettePositions?: number[];
   collectedCorn?: CollectedCorn[];
 }
 
-export interface LogRow {
-  type: 'log';
+export interface ConvoyRow {
+  type: 'convoy';
   direction: boolean;
   speed: number;
-  logs: Array<{ index: number }>;
+  vehicles: Array<{ index: number }>;
 }
 
-export interface Animal {
+export interface RaceEntity {
   index: number;
   species: string;
   needsFeed?: boolean;
@@ -76,39 +75,37 @@ export interface Animal {
   packSize?: number;
 }
 
-export interface AnimalRow {
-  type: 'animal';
+export interface RaceLaneRow {
+  type: 'racelane';
   direction: boolean;
   speed: number;
-  animals: Animal[];
+  entities: RaceEntity[];
 }
 
 export interface GrassRow {
   type: 'grass';
 }
 
-export type RowData = ForestRow | LogRow | AnimalRow | GrassRow;
+export type RowData = VergRow | ConvoyRow | RaceLaneRow | GrassRow;
 
 // Store types
 export interface GameStore {
   status: GameStatus;
   score: number;
-  cornCount: number;
+  musetteCount: number;
   feedCount: number;
   checkpointRow: number;
   checkpointTile: number;
-  isPaused: boolean;
   playCount: number;
-  totalCornCollected: number;
+  totalMusettesCollected: number;
   totalFeeds: number;
   pause: () => void;
   resume: () => void;
   setCheckpoint: (row: number, tile: number) => void;
-  incrementCorn: () => void;
+  collectMusette: () => void;
   incrementFeed: () => void;
   updateScore: (row: number) => void;
   setStatus: (status: GameStatus) => void;
-  setPaused: (paused: boolean) => void;
   endGame: () => void;
   reset: () => void;
 }
@@ -116,7 +113,7 @@ export interface GameStore {
 export interface MapStore {
   rows: RowData[];
   addRows: () => void;
-  markAnimalFed: (rowIndex: number, animalIndex: number) => void;
+  markEntityFed: (rowIndex: number, entityIndex: number) => void;
   reset: () => void;
 }
 
@@ -129,20 +126,6 @@ export interface UserStore {
   userData: UserData | null;
   setUserName: (name: string) => void;
   clearUser: () => void;
-}
-
-// Leaderboard types
-export interface LeaderboardEntry {
-  id: string;
-  name: string;
-  score: number;
-  timestamp: number;
-}
-
-export interface LeaderboardStore {
-  loading: boolean;
-  error: string | null;
-  addEntry: (entry: Omit<LeaderboardEntry, 'timestamp'>) => Promise<void>;
 }
 
 // Component props types
@@ -170,7 +153,7 @@ export interface RowProps {
 
 export interface ForestProps {
   rowIndex: number;
-  rowData: ForestRow;
+  rowData: VergRow;
 }
 
 // Animation types

@@ -61,7 +61,7 @@ export default function Ball({
           {needsFeed && (
             <group ref={glowRef}>
               {/* Pulsing ring indicator above feedable cyclists */}
-              <mesh position={[4, 0, 28]} rotation-x={Math.PI / 2}>
+              <mesh position={[0, 0, 28]} rotation-x={Math.PI / 2}>
                 <torusGeometry args={[5, 1.2, 6, 16]} />
                 <meshStandardMaterial
                   color={0x00e676}
@@ -72,7 +72,7 @@ export default function Ball({
                 />
               </mesh>
               {/* Bidon icon floating above */}
-              <mesh position={[4, 0, 34]}>
+              <mesh position={[0, 0, 34]}>
                 <cylinderGeometry args={[1.5, 1.5, 5, 8]} />
                 <meshStandardMaterial
                   color={0x00e676}
@@ -220,15 +220,27 @@ function Motorbike({ color }: { color: number }) {
   return (
     <group>
       {/* Rear wheel */}
-      <mesh position={[-9, 0, 6]} rotation-y={Math.PI / 2} castShadow receiveShadow>
-        <cylinderGeometry args={[8, 8, 5, 12]} />
-        <meshLambertMaterial color={0x888888} flatShading />
-      </mesh>
+      <group position={[-9, 0, 6]}>
+        <mesh castShadow receiveShadow rotation-y={Math.PI / 2}>
+          <torusGeometry args={[5, 1.2, 8, 16]} />
+          <meshLambertMaterial color={0x222222} flatShading />
+        </mesh>
+        <mesh castShadow receiveShadow>
+          <sphereGeometry args={[1, 6, 6]} />
+          <meshLambertMaterial color={0x999999} flatShading />
+        </mesh>
+      </group>
       {/* Front wheel */}
-      <mesh position={[9, 0, 6]} rotation-y={Math.PI / 2} castShadow receiveShadow>
-        <cylinderGeometry args={[8, 8, 5, 12]} />
-        <meshLambertMaterial color={0x888888} flatShading />
-      </mesh>
+      <group position={[9, 0, 6]}>
+        <mesh castShadow receiveShadow rotation-y={Math.PI / 2}>
+          <torusGeometry args={[5, 1.2, 8, 16]} />
+          <meshLambertMaterial color={0x222222} flatShading />
+        </mesh>
+        <mesh castShadow receiveShadow>
+          <sphereGeometry args={[1, 6, 6]} />
+          <meshLambertMaterial color={0x999999} flatShading />
+        </mesh>
+      </group>
       {/* Bike body — long flat box */}
       <mesh position={[0, 0, 9]} castShadow receiveShadow>
         <boxGeometry args={[20, 6, 4]} />

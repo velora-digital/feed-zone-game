@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { useUserStore } from '@/store/userStore';
-import { useLeaderboardStore } from '@/store/leaderboardStore';
 import { queueMove } from '@/logic/playerLogic';
 import { pauseBackgroundMusic, resumeBackgroundMusic } from '@/sound/playBackgroundMusic';
-import { fetchTopScores, LeaderboardRow } from '@/utils/leaderboard';
 import { UI_CONFIG } from '@/utils/constants';
+
+const FEED_BONUS_MULTIPLIER = 10;
 
 const UCI_NOTICES = [
   'UCI introduces emergency wheel-depth cap after roadside collision',
@@ -32,9 +32,10 @@ export function Score() {
   return <div id="score">{score}</div>;
 }
 
-function BidonIcon() {
+function BidonIcon({ size = 20 }: { size?: number }) {
+  const height = size * 1.4;
   return (
-    <svg width="20" height="28" viewBox="0 0 20 28" style={{ display: 'inline-block', verticalAlign: 'middle', margin: '0 1px' }}>
+    <svg width={size} height={height} viewBox="0 0 20 28" style={{ display: 'inline-block', verticalAlign: 'middle', margin: '0 1px' }}>
       {/* Cap / nozzle */}
       <rect x="7" y="0" width="6" height="5" rx="1" fill="#eeeeee" />
       {/* Bottle body */}
@@ -119,41 +120,81 @@ export function MusicToggle() {
   );
 }
 
-function Leaderboard() {
-  const [scores, setScores] = useState<LeaderboardRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+export function StartScreen() {
+  const status = useGameStore(state => state.status);
 
   useEffect(() => {
-    fetchTopScores(10)
-      .then(rows => {
-        setScores(rows);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError(true);
-        setLoading(false);
-      });
-  }, []);
+    if (status !== 'idle') return;
 
-  if (loading) return <p className="leaderboard-loading">Loading scores...</p>;
-  if (error) return null;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        // TODO: Replace with useGameStore.getState().startGame() once available
+        useGameStore.getState().reset();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [status]);
+
+  if (status !== 'idle') return null;
+
+  const handleStart = () => {
+    // TODO: Replace with useGameStore.getState().startGame() once available
+    useGameStore.getState().reset();
+  };
 
   return (
-    <div className="leaderboard">
-      <h3 className="leaderboard-title">Top Soigneurs</h3>
-      {scores.length === 0 ? (
-        <p className="leaderboard-loading">No scores yet — be the first!</p>
-      ) : (
-        <ol className="leaderboard-list">
-          {scores.map((row, i) => (
-            <li key={i} className="leaderboard-row">
-              <span className="leaderboard-name">{row.name}</span>
-              <span className="leaderboard-score">{row.score}</span>
-            </li>
-          ))}
-        </ol>
-      )}
+    <div id="result-container">
+      <div id="result" style={{
+        background: 'linear-gradient(180deg, #1a237e 0%, #0d1b4a 100%)',
+        border: '3px solid #c6a84b',
+        textAlign: 'center',
+        padding: '2em 1.5em',
+      }}>
+        <h1 style={{
+          fontFamily: "'Press Start 2P', monospace",
+          fontSize: '2em',
+          color: '#c6a84b',
+          marginBottom: '0.5em',
+          textShadow: '2px 2px 0 #000',
+        }}>
+          FEED ZONE
+        </h1>
+        <p style={{
+          fontFamily: "'Press Start 2P', monospace",
+          fontSize: '0.7em',
+          color: '#ffffff',
+          marginBottom: '1.5em',
+          lineHeight: 1.6,
+        }}>
+          Be the soigneur. Feed the peloton.
+        </p>
+        <p style={{
+          fontSize: '0.55em',
+          color: '#aab4d6',
+          marginBottom: '2em',
+          lineHeight: 1.8,
+          fontFamily: "'Press Start 2P', monospace",
+        }}>
+          Arrow keys or swipe to move.<br />
+          Collect musettes. Feed hungry cyclists.
+        </p>
+        <button
+          onClick={handleStart}
+          style={{
+            fontFamily: "'Press Start 2P', monospace",
+            fontSize: '1em',
+            padding: '0.8em 1.5em',
+            background: '#c6a84b',
+            color: '#0d1b4a',
+            border: 'none',
+            cursor: 'pointer',
+            letterSpacing: '0.05em',
+          }}
+        >
+          PRESS ENTER TO START
+        </button>
+      </div>
     </div>
   );
 }
@@ -165,7 +206,6 @@ export function Result() {
   const reset = useGameStore(state => state.reset);
   const userData = useUserStore(state => state.userData);
   const setUserName = useUserStore(state => state.setUserName);
-  const addEntry = useLeaderboardStore(state => state.addEntry);
 
   const [nameInput, setNameInput] = useState('');
   const [showNameForm, setShowNameForm] = useState(false);
@@ -181,7 +221,7 @@ export function Result() {
     }
   }, [status]);
 
-  const feedBonus = feedCount * 10;
+  const feedBonus = feedCount * FEED_BONUS_MULTIPLIER;
   const totalScore = score + feedBonus;
 
   if (status !== 'over') return null;
@@ -189,23 +229,15 @@ export function Result() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const name = nameInput.trim();
-    const tempUserId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     setUserName(name);
-    if (totalScore > 0) {
-      addEntry({
-        id: tempUserId,
-        name: name,
-        score: totalScore,
-      }).catch(error => {
-        console.error('Failed to save score:', error);
-      });
-    }
     setShowNameForm(false);
+    // TODO: Replace with useGameStore.getState().startGame() once available
     reset();
   };
 
   const handleRetry = () => {
     if (userData) {
+      // TODO: Replace with useGameStore.getState().startGame() once available
       reset();
     } else {
       setShowNameForm(true);
@@ -222,7 +254,7 @@ export function Result() {
             <p className="result-score">Distance: {score}m</p>
             {feedCount > 0 && (
               <p className="result-score" style={{ color: '#00e676' }}>
-                Feeds: {feedCount} x 10 = +{feedBonus}
+                Feeds: {feedCount} x {FEED_BONUS_MULTIPLIER} = +{feedBonus}
               </p>
             )}
             <p className="result-score total-score">Total: {totalScore}</p>
@@ -238,9 +270,8 @@ export function Result() {
               autoFocus
               maxLength={20}
             />
-            <button type="submit">Go!</button>
+            <button type="submit">Roll Out!</button>
           </form>
-          <Leaderboard />
         </div>
       ) : (
         <div id="result">
@@ -251,33 +282,35 @@ export function Result() {
             <p className="result-score">Distance: {score}m</p>
             {feedCount > 0 && (
               <p className="result-score" style={{ color: '#00e676' }}>
-                Feeds: {feedCount} x 10 = +{feedBonus}
+                Feeds: {feedCount} x {FEED_BONUS_MULTIPLIER} = +{feedBonus}
               </p>
             )}
             <p className="result-score total-score">Total: {totalScore}</p>
           </div>
-          <Leaderboard />
-          <button onClick={handleRetry}>Retry</button>
+          <button onClick={handleRetry}>Go Again</button>
         </div>
       )}
     </div>
   );
 }
 
-export function CornScore() {
-  const cornCount = useGameStore(state => state.cornCount);
-  const { MAX_CORN_DISPLAY, CORN_SCORE_STYLE } = UI_CONFIG;
+export function MusetteScore() {
+  const musetteCount = useGameStore(state => state.musetteCount);
+  const { MAX_MUSETTE_DISPLAY, MUSETTE_SCORE_STYLE } = UI_CONFIG;
 
-  let items = '';
-  if (cornCount <= MAX_CORN_DISPLAY) {
-    items = '\u{1F9F4}'.repeat(cornCount);
-  } else {
-    items = '\u{1F9F4}'.repeat(MAX_CORN_DISPLAY) + ` +${cornCount - MAX_CORN_DISPLAY}`;
-  }
+  const maxDisplay = MAX_MUSETTE_DISPLAY;
+  const shown = Math.min(musetteCount, maxDisplay);
 
   return (
-    <div id="corn-score" style={CORN_SCORE_STYLE}>
-      {items}
+    <div id="musette-score" style={MUSETTE_SCORE_STYLE}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '1px' }}>
+        {Array.from({ length: shown }, (_, i) => (
+          <BidonIcon key={i} size={16} />
+        ))}
+        {musetteCount > maxDisplay && (
+          <span style={{ fontSize: '0.7em', marginLeft: 4 }}>+{musetteCount - maxDisplay}</span>
+        )}
+      </span>
     </div>
   );
 }
