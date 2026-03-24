@@ -13,18 +13,20 @@ const hazardToColor = {
 export default function BallLane({ rowIndex, rowData }) {
   return (
     <Road rowIndex={rowIndex}>
-      {rowData.animals.map((animal, index) => (
+      {rowData.entities.map((entity, index) => (
         <Ball
           key={index}
           rowIndex={rowIndex}
-          ballIndex={animal.index}
+          ballIndex={entity.index}
           direction={rowData.direction}
           speed={rowData.speed}
-          color={hazardToColor[animal.species] || 0x2196f3}
-          total={rowData.animals.length}
-          needsFeed={animal.needsFeed && !animal.fed}
+          color={hazardToColor[entity.species] || 0x2196f3}
+          total={rowData.entities.length}
+          needsFeed={entity.needsFeed && !entity.fed}
           animalIndex={index}
-          packSize={animal.packSize}
+          packSize={entity.packSize}
+          feedWindowStart={entity.feedWindowStart}
+          feedWindowDuration={entity.feedWindowDuration}
         />
       ))}
     </Road>

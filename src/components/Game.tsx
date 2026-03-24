@@ -2,7 +2,7 @@ import React from 'react';
 import Player from '@/components/Player';
 import Map from '@/components/Map';
 import Scene from '@/components/Scene';
-import { Score, Controls, Result, MusetteScore, FeedScore, MusicToggle, StartScreen } from '@/components/UI';
+import { Score, Controls, Result, StartScreen, NearMissFlash, GameHUD } from '@/components/UI';
 import { useGameStore } from '@/store/gameStore';
 
 export default function Game() {
@@ -18,9 +18,8 @@ export default function Game() {
       {status !== 'idle' && (
         <>
           <Score />
-          <FeedScore />
-          <MusetteScore />
-          <MusicToggle />
+          <GameHUD />
+          <NearMissFlash />
           <Controls />
         </>
       )}

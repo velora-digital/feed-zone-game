@@ -1,21 +1,18 @@
 import { create } from 'zustand';
-import { generateRows } from '@/logic/mapLogic';
-import { INITIAL_ROWS, NEW_ROWS_BATCH } from '@/utils/constants';
+import { generateFullMap } from '@/logic/mapLogic';
+import { resetActivatedClusters } from '@/logic/feedWindowTracker';
 import { MapStore, RowData } from '@/types';
 
 export const useMapStore = create<MapStore>(set => ({
-  rows: generateRows(INITIAL_ROWS),
+  rows: generateFullMap(),
   addRows: () => {
-    const newRows = generateRows(NEW_ROWS_BATCH);
-    set(state => ({
-      rows: [...state.rows, ...newRows],
-    }));
+    // No-op: full map is generated upfront for 20 sections
   },
   markEntityFed: (rowIndex: number, entityIndex: number) => {
     set(state => {
       const newRows = [...state.rows];
       const row = newRows[rowIndex];
-      if (row && row.type === 'racelane') {
+      if (row && row.type === 'road') {
         const newEntities = [...row.entities];
         newEntities[entityIndex] = { ...newEntities[entityIndex], fed: true };
         newRows[rowIndex] = { ...row, entities: newEntities };
@@ -23,7 +20,44 @@ export const useMapStore = create<MapStore>(set => ({
       return { rows: newRows };
     });
   },
-  reset: () => set({ rows: generateRows(INITIAL_ROWS) }),
+  setFeedWindowStart: (rowIndex: number, entityIndex: number, timestamp: number) => {
+    set(state => {
+      const newRows = [...state.rows];
+      const row = newRows[rowIndex];
+      if (row && row.type === 'road') {
+        const newEntities = [...row.entities];
+        newEntities[entityIndex] = { ...newEntities[entityIndex], feedWindowStart: timestamp };
+        newRows[rowIndex] = { ...row, entities: newEntities };
+      }
+      return { rows: newRows };
+    });
+  },
+  activateFeed: (rowIndex: number, entityIndex: number) => {
+    set(state => {
+      const newRows = [...state.rows];
+      const row = newRows[rowIndex];
+      if (row && row.type === 'road') {
+        const newEntities = [...row.entities];
+        newEntities[entityIndex] = { ...newEntities[entityIndex], needsFeed: true, potentialFeed: false };
+        newRows[rowIndex] = { ...row, entities: newEntities };
+      }
+      return { rows: newRows };
+    });
+  },
+  markFeedExpired: (rowIndex: number, entityIndex: number) => {
+    set(state => {
+      const newRows = [...state.rows];
+      const row = newRows[rowIndex];
+      if (row && row.type === 'road') {
+        const newEntities = [...row.entities];
+        newEntities[entityIndex] = { ...newEntities[entityIndex], feedExpired: true, needsFeed: false };
+        newRows[rowIndex] = { ...row, entities: newEntities };
+      }
+      return { rows: newRows };
+    });
+  },
+  reset: () => {
+    resetActivatedClusters();
+    set({ rows: generateFullMap() });
+  },
 }));
-
-// NOTE: Do not mutate rows or row objects directly. Always use setState and create new arrays/objects for updates.

@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useMapStore } from '@/store/mapStore';
-import BallLane from './BallLane';
+import RoadLane from './RoadLane';
 import Corn from './Corn';
 import Grass from './Grass';
-import LogLane from './LogLane';
 import Tree from './Tree';
 import { playerState } from '@/logic/playerLogic';
 import { visibleTilesDistance } from '@/utils/constants';
 import { RowProps, ForestProps, RowData, VergRow } from '@/types';
+import { useFeedWindowTracker } from '@/logic/feedWindowTracker';
 
 export default function Map() {
+  useFeedWindowTracker();
   const rows = useMapStore(state => state.rows);
   // Track player row in React state so Map re-renders as the player advances
   const [currentRow, setCurrentRow] = useState(0);
@@ -50,10 +51,8 @@ export function Row({ rowIndex, rowData }: RowProps) {
   switch (rowData.type) {
     case 'verge':
       return <Forest rowIndex={rowIndex} rowData={rowData} />;
-    case 'convoy':
-      return <LogLane rowIndex={rowIndex} rowData={rowData} />;
-    case 'racelane':
-      return <BallLane rowIndex={rowIndex} rowData={rowData} />;
+    case 'road':
+      return <RoadLane rowIndex={rowIndex} rowData={rowData} />;
     case 'grass':
       return <Grass rowIndex={rowIndex} />;
     default:

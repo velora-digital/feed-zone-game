@@ -1,5 +1,7 @@
 import React, { useRef } from 'react';
+import * as THREE from 'three';
 import { useVehicleAnimation } from '@/animation/useVehicleAnimation';
+import { useSinglePassAnimation } from '@/animation/useSinglePassAnimation';
 import { useHitDetection } from '@/logic/collisionEffects';
 import {
   tileSize,
@@ -19,20 +21,24 @@ export default function Ball({
   color,
   total,
   needsFeed = false,
+  isFeedableEntity = false,
   animalIndex,
   packSize,
+  feedWindowStart,
+  feedWindowDuration,
 }) {
   const ref = useRef(null);
-  const glowRef = useRef(null);
-  const wasFeedableRef = useRef(needsFeed);
-  if (needsFeed) wasFeedableRef.current = true;
-  const isSoloCyclist = needsFeed || wasFeedableRef.current;
+  const glowRef = useRef<THREE.Group>(null);
+  const isSoloCyclist = isFeedableEntity;
   const wrapLength = (maxTileIndex - minTileIndex + 4) * tileSize;
   const beginningOfRow = (minTileIndex - 2) * tileSize;
   const endOfRow = (maxTileIndex + 2) * tileSize;
   const offset = (ballIndex / total) * wrapLength;
+
+  // Feedable entities always use single-pass (stable from first render)
+  // Non-feedable entities always use looping
   useVehicleAnimation(
-    ref,
+    isFeedableEntity ? { current: null } : ref,
     direction,
     speed,
     offset,
@@ -40,44 +46,54 @@ export default function Ball({
     beginningOfRow,
     endOfRow
   );
+  useSinglePassAnimation(
+    isFeedableEntity ? ref : { current: null },
+    direction,
+    feedWindowStart,
+    feedWindowDuration,
+  );
   useHitDetection(ref, rowIndex, needsFeed, animalIndex);
   const isVisible =
     Math.abs(rowIndex - playerState.currentRow) <= visibleTilesDistance;
 
   const isMotorbike = color === 0xf44336 || color === 0xff9800;
 
-  // Pulsing glow for feedable cyclists
+  // Pulsing amber indicator for feedable cyclists
   useFrame(({ clock }) => {
     if (!glowRef.current) return;
-    const pulse = 0.8 + 0.4 * Math.sin(clock.elapsedTime * 4);
+    const pulse = 0.8 + 0.3 * Math.sin(clock.elapsedTime * 5);
     glowRef.current.scale.set(pulse, pulse, pulse);
+    // Bob up and down
+    glowRef.current.position.z = 28 + 2 * Math.sin(clock.elapsedTime * 3);
   });
 
   return (
     <group ref={ref} position={[0, 0, 0]}>
       {isVisible && (
         <>
-          {isMotorbike ? <Motorbike color={color} /> : isSoloCyclist ? <CyclistOnBike jerseyColor={needsFeed ? 0x00e676 : color} helmetColor={needsFeed ? 0x00e676 : 0xeeeeee} /> : <PelotonGroup color={color} packSize={packSize || 3} />}
+          {isMotorbike ? <Motorbike color={color} /> : isSoloCyclist ? <CyclistOnBike jerseyColor={0x00e676} helmetColor={0xeeeeee} /> : <PelotonGroup color={color} packSize={packSize || 3} />}
           {needsFeed && (
-            <group ref={glowRef}>
-              {/* Pulsing ring indicator above feedable cyclists */}
-              <mesh position={[0, 0, 28]} rotation-x={Math.PI / 2}>
-                <torusGeometry args={[5, 1.2, 6, 16]} />
+            <group ref={glowRef} position={[0, 0, 28]}>
+              {/* Pulsing amber diamond indicator above feedable cyclist */}
+              <mesh rotation-x={Math.PI / 4} rotation-z={Math.PI / 4}>
+                <boxGeometry args={[5, 5, 5]} />
                 <meshStandardMaterial
-                  color={0x00e676}
-                  emissive={0x00e676}
-                  emissiveIntensity={0.8}
+                  color={0xffaa00}
+                  emissive={0xffaa00}
+                  emissiveIntensity={0.9}
                   transparent
-                  opacity={0.7}
+                  opacity={0.85}
                 />
               </mesh>
-              {/* Bidon icon floating above */}
-              <mesh position={[0, 0, 34]}>
-                <cylinderGeometry args={[1.5, 1.5, 5, 8]} />
+              {/* Down arrow below diamond */}
+              <mesh position={[0, 0, -5]}>
+                <coneGeometry args={[3, 4, 4]} />
                 <meshStandardMaterial
-                  color={0x00e676}
-                  emissive={0x00e676}
-                  emissiveIntensity={0.5}
+                  color={0xffaa00}
+                  emissive={0xffaa00}
+                  emissiveIntensity={0.7}
+                  transparent
+                  opacity={0.8}
                 />
               </mesh>
             </group>
@@ -219,52 +235,112 @@ function MotorbikeRecLight() {
 function Motorbike({ color }: { color: number }) {
   return (
     <group>
+      {/* === Wheels === */}
       {/* Rear wheel */}
-      <group position={[-9, 0, 6]}>
+      <group position={[-10, 0, 4]}>
         <mesh castShadow receiveShadow rotation-y={Math.PI / 2}>
-          <torusGeometry args={[5, 1.2, 8, 16]} />
+          <torusGeometry args={[4, 1, 8, 16]} />
           <meshLambertMaterial color={0x222222} flatShading />
         </mesh>
-        <mesh castShadow receiveShadow>
-          <sphereGeometry args={[1, 6, 6]} />
-          <meshLambertMaterial color={0x999999} flatShading />
-        </mesh>
+        <mesh><sphereGeometry args={[1.5, 6, 6]} /><meshLambertMaterial color={0x666666} flatShading /></mesh>
       </group>
       {/* Front wheel */}
-      <group position={[9, 0, 6]}>
+      <group position={[10, 0, 4]}>
         <mesh castShadow receiveShadow rotation-y={Math.PI / 2}>
-          <torusGeometry args={[5, 1.2, 8, 16]} />
+          <torusGeometry args={[4, 1, 8, 16]} />
           <meshLambertMaterial color={0x222222} flatShading />
         </mesh>
-        <mesh castShadow receiveShadow>
-          <sphereGeometry args={[1, 6, 6]} />
-          <meshLambertMaterial color={0x999999} flatShading />
-        </mesh>
+        <mesh><sphereGeometry args={[1.5, 6, 6]} /><meshLambertMaterial color={0x666666} flatShading /></mesh>
       </group>
-      {/* Bike body — long flat box */}
-      <mesh position={[0, 0, 9]} castShadow receiveShadow>
-        <boxGeometry args={[20, 6, 4]} />
+
+      {/* === Frame & body === */}
+      {/* Main frame — angled from rear axle to front */}
+      <mesh position={[0, 0, 7]} castShadow receiveShadow>
+        <boxGeometry args={[22, 5, 3]} />
         <meshLambertMaterial color={color} flatShading />
       </mesh>
-      {/* Rider torso */}
-      <mesh position={[2, 0, 15]} rotation-z={0.2} castShadow receiveShadow>
-        <boxGeometry args={[6, 4, 6]} />
+      {/* Fuel tank */}
+      <mesh position={[3, 0, 10]} castShadow receiveShadow>
+        <boxGeometry args={[8, 5, 3]} />
+        <meshLambertMaterial color={color} flatShading />
+      </mesh>
+      {/* Front fork */}
+      <mesh position={[9, 0, 6]} rotation-z={0.3} castShadow receiveShadow>
+        <boxGeometry args={[2, 2, 8]} />
+        <meshLambertMaterial color={0x888888} flatShading />
+      </mesh>
+      {/* Handlebars */}
+      <mesh position={[10, 0, 11]} castShadow receiveShadow>
+        <boxGeometry args={[3, 8, 1.5]} />
         <meshLambertMaterial color={0x333333} flatShading />
       </mesh>
-      {/* Rider head + helmet */}
-      <mesh position={[4, 0, 20]} castShadow receiveShadow>
+      {/* Seat */}
+      <mesh position={[-2, 0, 11]} castShadow receiveShadow>
+        <boxGeometry args={[12, 5, 2]} />
+        <meshLambertMaterial color={0x222222} flatShading />
+      </mesh>
+      {/* Exhaust pipe */}
+      <mesh position={[-8, -2, 6]} castShadow receiveShadow rotation-x={Math.PI / 2}>
+        <cylinderGeometry args={[0.8, 1, 6, 6]} />
+        <meshLambertMaterial color={0x999999} flatShading />
+      </mesh>
+
+      {/* === Driver (front) === */}
+      {/* Driver torso — leaning forward */}
+      <mesh position={[4, 0, 16]} rotation-z={0.4} castShadow receiveShadow>
+        <boxGeometry args={[7, 4, 5]} />
+        <meshLambertMaterial color={0x1a1a1a} flatShading />
+      </mesh>
+      {/* Driver arms reaching to handlebars */}
+      <mesh position={[8, 2, 14]} rotation-z={0.5} castShadow receiveShadow>
+        <boxGeometry args={[6, 2, 2]} />
+        <meshLambertMaterial color={0x1a1a1a} flatShading />
+      </mesh>
+      <mesh position={[8, -2, 14]} rotation-z={0.5} castShadow receiveShadow>
+        <boxGeometry args={[6, 2, 2]} />
+        <meshLambertMaterial color={0x1a1a1a} flatShading />
+      </mesh>
+      {/* Driver head + helmet */}
+      <mesh position={[6, 0, 21]} castShadow receiveShadow>
         <sphereGeometry args={[2.5, 8, 8]} />
         <meshLambertMaterial color={0x222222} flatShading />
       </mesh>
-      {/* Camera body — small box behind rider, raised */}
+      {/* Helmet visor */}
+      <mesh position={[8, 0, 21]} castShadow receiveShadow>
+        <boxGeometry args={[1, 3.5, 2]} />
+        <meshLambertMaterial color={0x90caf9} flatShading />
+      </mesh>
+
+      {/* === Camera operator (back) === */}
+      {/* Cameraman torso — sitting upright */}
+      <mesh position={[-5, 0, 16]} castShadow receiveShadow>
+        <boxGeometry args={[6, 5, 6]} />
+        <meshLambertMaterial color={0x444444} flatShading />
+      </mesh>
+      {/* Cameraman head */}
       <mesh position={[-5, 0, 22]} castShadow receiveShadow>
-        <boxGeometry args={[5, 4, 4]} />
+        <sphereGeometry args={[2.5, 8, 8]} />
+        <meshLambertMaterial color={0xffcc99} flatShading />
+      </mesh>
+      {/* Headset */}
+      <mesh position={[-5, 0, 24]} castShadow receiveShadow>
+        <boxGeometry args={[6, 6, 1]} />
+        <meshLambertMaterial color={0x333333} flatShading />
+      </mesh>
+      {/* Camera on shoulder — boxy TV camera */}
+      <mesh position={[-5, 3, 22]} castShadow receiveShadow>
+        <boxGeometry args={[7, 4, 4]} />
         <meshLambertMaterial color={0x212121} flatShading />
       </mesh>
-      {/* Camera lens — white cylinder to stand out */}
-      <mesh position={[-5, 3, 22]} castShadow receiveShadow>
-        <cylinderGeometry args={[1.2, 1.4, 3, 8]} />
-        <meshLambertMaterial color={0xffffff} flatShading />
+      {/* Camera lens — white cylinder pointing sideways */}
+      <mesh position={[-5, 6, 22]} rotation-x={Math.PI / 2} castShadow receiveShadow>
+        <cylinderGeometry args={[1.5, 1.8, 4, 8]} />
+        <meshLambertMaterial color={0xeeeeee} flatShading />
+      </mesh>
+      {/* Lens hood */}
+      <mesh position={[-5, 8, 22]} rotation-x={Math.PI / 2} castShadow receiveShadow>
+        <cylinderGeometry args={[2, 1.5, 1.5, 8]} />
+        <meshLambertMaterial color={0x111111} flatShading />
       </mesh>
       {/* Flashing red recording light */}
       <MotorbikeRecLight />

@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+export type DifficultyStage = 'parcours' | 'feedzone' | 'flammeRouge' | 'sprint';
+
 // Game state types
 export type GameStatus = 'idle' | 'running' | 'over' | 'paused';
 
@@ -8,11 +10,20 @@ export interface GameState {
   score: number;
   musetteCount: number;
   feedCount: number;
+  feedStreak: number;
+  bestStreak: number;
+  lifetimeBestStreak: number;
+  feedPoints: number;
   checkpointRow: number;
   checkpointTile: number;
   playCount: number;
   totalMusettesCollected: number;
   totalFeeds: number;
+  nearMissCount: number;
+  nearMissPoints: number;
+  personalBest: number;
+  isNewRecord: boolean;
+  noBottleAttempt: number;
 }
 
 // Player types
@@ -36,7 +47,7 @@ export interface PlayerState {
 }
 
 // Map types
-export type RowType = 'verge' | 'convoy' | 'racelane' | 'grass';
+export type RowType = 'verge' | 'road' | 'grass';
 
 export interface RoadsideObject {
   tileIndex: number;
@@ -58,35 +69,36 @@ export interface VergRow {
   trees: RoadsideObject[];
   musettePositions?: number[];
   collectedCorn?: CollectedCorn[];
+  sectionId?: number;
 }
 
-export interface ConvoyRow {
-  type: 'convoy';
-  direction: boolean;
-  speed: number;
-  vehicles: Array<{ index: number }>;
-}
-
-export interface RaceEntity {
+export interface RoadEntity {
   index: number;
   species: string;
   needsFeed?: boolean;
+  potentialFeed?: boolean;
   fed?: boolean;
   packSize?: number;
+  feedWindowStart?: number;
+  feedWindowDuration?: number;
+  feedExpired?: boolean;
+  feedOrder?: number;
 }
 
-export interface RaceLaneRow {
-  type: 'racelane';
+export interface RoadRow {
+  type: 'road';
   direction: boolean;
   speed: number;
-  entities: RaceEntity[];
+  entities: RoadEntity[];
+  sectionId?: number;
+  clusterFeedTotal?: number;
 }
 
 export interface GrassRow {
   type: 'grass';
 }
 
-export type RowData = VergRow | ConvoyRow | RaceLaneRow | GrassRow;
+export type RowData = VergRow | RoadRow | GrassRow;
 
 // Store types
 export interface GameStore {
@@ -94,26 +106,41 @@ export interface GameStore {
   score: number;
   musetteCount: number;
   feedCount: number;
+  feedStreak: number;
+  bestStreak: number;
+  lifetimeBestStreak: number;
+  feedPoints: number;
   checkpointRow: number;
   checkpointTile: number;
   playCount: number;
   totalMusettesCollected: number;
   totalFeeds: number;
+  nearMissCount: number;
+  nearMissPoints: number;
+  personalBest: number;
+  isNewRecord: boolean;
+  noBottleAttempt: number;
+  startGame: () => void;
   pause: () => void;
   resume: () => void;
   setCheckpoint: (row: number, tile: number) => void;
   collectMusette: () => void;
   incrementFeed: () => void;
+  breakStreak: () => void;
   updateScore: (row: number) => void;
   setStatus: (status: GameStatus) => void;
   endGame: () => void;
   reset: () => void;
+  recordNearMiss: () => void;
 }
 
 export interface MapStore {
   rows: RowData[];
   addRows: () => void;
   markEntityFed: (rowIndex: number, entityIndex: number) => void;
+  activateFeed: (rowIndex: number, entityIndex: number) => void;
+  setFeedWindowStart: (rowIndex: number, entityIndex: number, timestamp: number) => void;
+  markFeedExpired: (rowIndex: number, entityIndex: number) => void;
   reset: () => void;
 }
 

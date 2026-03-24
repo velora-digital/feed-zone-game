@@ -64,9 +64,6 @@ export function stepCompleted(): void {
       });
       playMusetteSound();
       useGameStore.getState().collectMusette();
-      useGameStore
-        .getState()
-        .setCheckpoint(playerState.currentRow, playerState.currentTile);
     }
   }
 

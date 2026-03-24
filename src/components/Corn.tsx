@@ -6,7 +6,7 @@ import { visibleTilesDistance } from '@/utils/constants';
 import { CornProps } from '@/types';
 import * as THREE from 'three';
 
-// Energy gel / spare bidon collectible — replaces corn
+// Water bottle collectible — pickup to use as ammo for feeding riders
 export default function Corn({
   tileIndex,
   collected = false,
@@ -20,66 +20,60 @@ export default function Corn({
     typeof rowIndex === 'number'
       ? Math.abs(rowIndex - playerState.currentRow) <= visibleTilesDistance
       : true;
-  useFrame(() => {
+
+  useFrame(({ clock }) => {
     if (!isVisible) return;
-    if (!collected || !ref.current || doneRef.current) return;
-    const duration = 0.6;
-    const elapsed = (performance.now() - start) / 1000;
-    if (elapsed >= duration) {
-      if (!doneRef.current) {
-        doneRef.current = true;
-        setDone(prev => {
-          if (!prev) return true;
-          return prev;
-        });
+    if (!ref.current) return;
+
+    if (collected) {
+      // Collection animation — pop up and fade
+      if (doneRef.current) return;
+      const duration = 0.6;
+      const elapsed = (performance.now() - start) / 1000;
+      if (elapsed >= duration) {
+        if (!doneRef.current) {
+          doneRef.current = true;
+          setDone(prev => (!prev ? true : prev));
+        }
+        return;
       }
-      return;
+      const scale = 1 + 2 * Math.sin((elapsed / duration) * Math.PI);
+      ref.current.scale.set(scale, scale, scale);
+      ref.current.position.z = 30 + 10 * Math.sin((elapsed / duration) * Math.PI);
+    } else {
+      // Idle pulse — gentle bob and glow to make it obvious this is a pickup
+      const pulse = 1.0 + 0.15 * Math.sin(clock.elapsedTime * 3);
+      ref.current.scale.set(pulse, pulse, pulse);
+      ref.current.position.z = 8 + 2 * Math.sin(clock.elapsedTime * 2);
     }
-    const scale = 1 + 2 * Math.sin((elapsed / duration) * Math.PI);
-    ref.current.scale.set(scale, scale, scale);
-    ref.current.position.z = 30 + 10 * Math.sin((elapsed / duration) * Math.PI);
   });
+
   if (done) return null;
 
-  // Alternate between energy gel and bidon based on tile index
-  const isGel = tileIndex % 2 === 0;
-
   return (
-    <group ref={ref} position={[tileIndex * tileSize, 0, 6]}>
-      {isGel ? <EnergyGel /> : <SpareBidon />}
+    <group ref={ref} position={[tileIndex * tileSize, 0, 8]}>
+      <WaterBottle />
     </group>
   );
 }
 
-function EnergyGel() {
-  return (
-    <group rotation-x={0.3}>
-      {/* Gel packet body */}
-      <mesh castShadow receiveShadow>
-        <boxGeometry args={[3, 1.5, 5]} />
-        <meshLambertMaterial color={0xff6f00} flatShading />
-      </mesh>
-      {/* Gel top / tear tab */}
-      <mesh position={[0, 0, 3.2]} castShadow receiveShadow>
-        <boxGeometry args={[2, 1.5, 1]} />
-        <meshLambertMaterial color={0xffcc02} flatShading />
-      </mesh>
-    </group>
-  );
-}
-
-function SpareBidon() {
+function WaterBottle() {
   return (
     <group>
-      {/* Bidon bottle */}
+      {/* Bottle body — white/light grey, bigger than before */}
       <mesh castShadow receiveShadow rotation-x={Math.PI / 2}>
-        <cylinderGeometry args={[1.8, 1.8, 5, 8]} />
-        <meshLambertMaterial color={0x00e676} flatShading />
+        <cylinderGeometry args={[2.5, 2.5, 7, 8]} />
+        <meshLambertMaterial color={0xf0f0f0} flatShading />
       </mesh>
-      {/* Bidon cap / nozzle */}
-      <mesh position={[0, 0, 3.2]} castShadow receiveShadow rotation-x={Math.PI / 2}>
-        <cylinderGeometry args={[0.7, 0.9, 1.5, 8]} />
-        <meshLambertMaterial color={0xeeeeee} flatShading />
+      {/* Blue label band */}
+      <mesh position={[0, 0, -0.5]} castShadow receiveShadow rotation-x={Math.PI / 2}>
+        <cylinderGeometry args={[2.6, 2.6, 2, 8]} />
+        <meshLambertMaterial color={0x29b6f6} flatShading />
+      </mesh>
+      {/* Cap / nozzle — white */}
+      <mesh position={[0, 0, 4.5]} castShadow receiveShadow rotation-x={Math.PI / 2}>
+        <cylinderGeometry args={[1.0, 1.2, 2, 8]} />
+        <meshLambertMaterial color={0xffffff} flatShading />
       </mesh>
     </group>
   );
