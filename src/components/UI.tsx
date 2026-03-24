@@ -7,7 +7,7 @@ import { initSwipeDetector } from '@/logic/swipeDetector';
 import { UI_CONFIG, TOTAL_SECTIONS } from '@/utils/constants';
 import { useMapStore } from '@/store/mapStore';
 import { playerState } from '@/logic/playerLogic';
-import { getActiveSectionId, isSectionCompleteState } from '@/logic/feedWindowTracker';
+import { getActiveSectionId, isSectionCompleteState, isPlayerAhead } from '@/logic/feedWindowTracker';
 
 
 const UCI_NOTICES = [
@@ -330,6 +330,7 @@ export function GameHUD() {
   const completedSectionsRef = useRef(new Set<number>());
 
   const activeSectionId = getActiveSectionId();
+  const playerAhead = isPlayerAhead(); // re-evaluated on score change (player movement)
 
   // Count feeds in active section
   let totalFeeds = 0;
@@ -541,6 +542,30 @@ export function GameHUD() {
           animation: 'fadeInOut 2s ease-in-out infinite',
         }}>
           GRAB BOTTLES!
+        </div>
+      )}
+
+      {/* Warning: player moved onto next road before completing current section */}
+      {playerAhead && (
+        <div style={{
+          position: 'absolute',
+          top: '25%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontFamily: '"Press Start 2P", monospace',
+          fontSize: '0.9em',
+          color: '#ff4444',
+          textShadow: '3px 3px 6px rgba(0,0,0,0.8)',
+          zIndex: 20,
+          pointerEvents: 'none',
+          textAlign: 'center',
+          lineHeight: 1.8,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          padding: '12px 20px',
+          borderRadius: 8,
+        }}>
+          ⚠ UNFED RIDERS ON PREVIOUS ROAD!<br/>
+          <span style={{ fontSize: '0.7em', color: '#ffaa00' }}>Go back to feed them</span>
         </div>
       )}
 

@@ -59,6 +59,11 @@ export function useFeedWindowTracker() {
       if (playerSectionId !== undefined) break;
     }
 
+    // Check if player has moved ahead onto a different road
+    const currentRowData = rows[currentRow];
+    const playerOnRoad = currentRowData !== undefined && currentRowData.type === 'road';
+    updatePlayerAheadState(playerSectionId, playerOnRoad);
+
     // Activate new section only if current is complete (or none active)
     if (playerSectionId !== undefined) {
       if (activeSectionId === null) {
@@ -152,6 +157,22 @@ export function getActiveSectionId(): number | null {
 
 export function isSectionCompleteState(): boolean {
   return sectionComplete;
+}
+
+// Track if player has moved ahead of active section
+let playerAheadWarning = false;
+
+export function isPlayerAhead(): boolean {
+  return playerAheadWarning;
+}
+
+export function updatePlayerAheadState(playerSectionId: number | undefined, playerOnRoad: boolean) {
+  // Only warn if player is on a ROAD row of a different section (not just verge)
+  if (activeSectionId !== null && !sectionComplete && playerSectionId !== undefined && playerSectionId !== activeSectionId && playerSectionId > activeSectionId && playerOnRoad) {
+    playerAheadWarning = true;
+  } else {
+    playerAheadWarning = false;
+  }
 }
 
 function activateFeedByOrder(rows: any[], sectionId: number, order: number) {
