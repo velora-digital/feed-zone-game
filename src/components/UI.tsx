@@ -421,7 +421,7 @@ export function GameHUD() {
   return (
     <>
       {/* === TOP CENTER: Bottles | Feed counter | Streak === */}
-      <div style={{
+      <div className="game-hud" style={{
         position: 'absolute',
         top: 12,
         left: '50%',
@@ -491,7 +491,7 @@ export function GameHUD() {
       </div>
 
       {/* === TOP RIGHT: Sections to go === */}
-      <div style={{
+      <div className="sections-to-go" style={{
         position: 'absolute',
         top: 15,
         right: 20,
