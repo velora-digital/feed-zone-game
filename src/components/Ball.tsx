@@ -76,7 +76,7 @@ export default function Ball({
             <group ref={glowRef} position={[0, 0, 28]}>
               {/* Pulsing amber diamond indicator above feedable cyclist */}
               <mesh rotation-x={Math.PI / 4} rotation-z={Math.PI / 4}>
-                <boxGeometry args={[5, 5, 5]} />
+                <boxGeometry args={[7, 7, 7]} />
                 <meshStandardMaterial
                   color={0xffaa00}
                   emissive={0xffaa00}
@@ -86,8 +86,8 @@ export default function Ball({
                 />
               </mesh>
               {/* Down arrow below diamond */}
-              <mesh position={[0, 0, -5]}>
-                <coneGeometry args={[3, 4, 4]} />
+              <mesh position={[0, 0, -7]}>
+                <coneGeometry args={[4, 6, 4]} />
                 <meshStandardMaterial
                   color={0xffaa00}
                   emissive={0xffaa00}
@@ -238,7 +238,7 @@ function Motorbike({ color }: { color: number }) {
       {/* === Wheels === */}
       {/* Rear wheel */}
       <group position={[-10, 0, 6]}>
-        <mesh castShadow receiveShadow rotation-y={Math.PI / 2}>
+        <mesh castShadow receiveShadow rotation-x={Math.PI / 2}>
           <torusGeometry args={[6, 1.5, 8, 16]} />
           <meshLambertMaterial color={0x222222} flatShading />
         </mesh>
@@ -246,7 +246,7 @@ function Motorbike({ color }: { color: number }) {
       </group>
       {/* Front wheel */}
       <group position={[10, 0, 6]}>
-        <mesh castShadow receiveShadow rotation-y={Math.PI / 2}>
+        <mesh castShadow receiveShadow rotation-x={Math.PI / 2}>
           <torusGeometry args={[6, 1.5, 8, 16]} />
           <meshLambertMaterial color={0x222222} flatShading />
         </mesh>
