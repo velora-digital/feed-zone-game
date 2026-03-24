@@ -133,7 +133,7 @@ function distributeFeedsAcrossCluster(clusterRows: RoadRow[], config: SectionCon
 
 export function generateVergeMetadata(config: SectionConfig): VergRow {
   const occupiedTiles = new Set();
-  const count = THREE.MathUtils.randInt(4, 6);
+  const count = THREE.MathUtils.randInt(3, 5);
   const trees = Array.from({ length: count }, () => {
     let tileIndex;
     do {

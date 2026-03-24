@@ -237,20 +237,20 @@ function Motorbike({ color }: { color: number }) {
     <group>
       {/* === Wheels === */}
       {/* Rear wheel */}
-      <group position={[-10, 0, 4]}>
+      <group position={[-10, 0, 6]}>
         <mesh castShadow receiveShadow rotation-y={Math.PI / 2}>
-          <torusGeometry args={[4, 1, 8, 16]} />
+          <torusGeometry args={[6, 1.5, 8, 16]} />
           <meshLambertMaterial color={0x222222} flatShading />
         </mesh>
-        <mesh><sphereGeometry args={[1.5, 6, 6]} /><meshLambertMaterial color={0x666666} flatShading /></mesh>
+        <mesh><sphereGeometry args={[2, 6, 6]} /><meshLambertMaterial color={0x666666} flatShading /></mesh>
       </group>
       {/* Front wheel */}
-      <group position={[10, 0, 4]}>
+      <group position={[10, 0, 6]}>
         <mesh castShadow receiveShadow rotation-y={Math.PI / 2}>
-          <torusGeometry args={[4, 1, 8, 16]} />
+          <torusGeometry args={[6, 1.5, 8, 16]} />
           <meshLambertMaterial color={0x222222} flatShading />
         </mesh>
-        <mesh><sphereGeometry args={[1.5, 6, 6]} /><meshLambertMaterial color={0x666666} flatShading /></mesh>
+        <mesh><sphereGeometry args={[2, 6, 6]} /><meshLambertMaterial color={0x666666} flatShading /></mesh>
       </group>
 
       {/* === Frame & body === */}
