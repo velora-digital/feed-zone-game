@@ -1,12 +1,21 @@
 import React from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { throttleRender } from '@/utils/fpsThrottle';
 import { CAMERA_CONFIG } from '@/utils/constants';
 
-/**
- * Scene wrapper component that provides the Three.js Canvas with
- * optimized rendering and lighting setup
- */
+const REFERENCE_HEIGHT = 600; // Design reference height in pixels
+
+function ResponsiveZoom() {
+  const { camera, size } = useThree();
+
+  // Scale zoom so game looks the same at any viewport size
+  const scale = size.height / REFERENCE_HEIGHT;
+  camera.zoom = scale;
+  camera.updateProjectionMatrix();
+
+  return null;
+}
+
 const Scene = ({ children }) => {
   return (
     <Canvas
@@ -19,6 +28,7 @@ const Scene = ({ children }) => {
     >
       <color attach="background" args={['#87CEEB']} />
       <ambientLight intensity={0.4} />
+      <ResponsiveZoom />
       {children}
     </Canvas>
   );
