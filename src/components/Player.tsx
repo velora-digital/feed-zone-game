@@ -39,7 +39,7 @@ export default function Player() {
   });
 
   return (
-    <Bounds fit clip observe margin={10}>
+    <Bounds fit clip margin={10}>
       <group ref={player}>
         <SoigneurBody />
         <DirectionalLight ref={lightRef} />
