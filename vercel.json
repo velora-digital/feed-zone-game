@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/feed-zone/assets/:path*", "destination": "/assets/:path*" },
+    { "source": "/feed-zone/audio/:path*", "destination": "/audio/:path*" },
+    { "source": "/feed-zone", "destination": "/index.html" },
+    { "source": "/feed-zone/", "destination": "/index.html" },
+    { "source": "/feed-zone/:path*", "destination": "/index.html" }
+  ]
+}
