@@ -1,37 +1,30 @@
-import React, { useEffect } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
+import React, { useEffect, useCallback } from 'react';
+import { Canvas, useThree, invalidate } from '@react-three/fiber';
 import { throttleRender } from '@/utils/fpsThrottle';
 import { CAMERA_CONFIG } from '@/utils/constants';
 
-function ResizeHandler() {
-  const { camera, gl } = useThree();
+function FullscreenResizeHandler() {
+  const { gl, invalidate: inv } = useThree();
 
   useEffect(() => {
     const handleResize = () => {
-      const width = gl.domElement.clientWidth;
-      const height = gl.domElement.clientHeight;
-      if (camera.type === 'OrthographicCamera') {
-        const cam = camera as any;
-        cam.left = width / -2;
-        cam.right = width / 2;
-        cam.top = height / 2;
-        cam.bottom = height / -2;
-        cam.updateProjectionMatrix();
-      }
-      gl.setSize(width, height);
+      // Force the canvas to re-measure and R3F to recalculate
+      setTimeout(() => {
+        gl.setSize(gl.domElement.clientWidth, gl.domElement.clientHeight);
+        inv();
+      }, 100);
     };
 
-    window.addEventListener('resize', handleResize);
-    // Also handle fullscreen changes
     document.addEventListener('fullscreenchange', handleResize);
     document.addEventListener('webkitfullscreenchange', handleResize);
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
       document.removeEventListener('fullscreenchange', handleResize);
       document.removeEventListener('webkitfullscreenchange', handleResize);
+      window.removeEventListener('resize', handleResize);
     };
-  }, [camera, gl]);
+  }, [gl, inv]);
 
   return null;
 }
@@ -48,11 +41,11 @@ const Scene = ({ children }) => {
       camera={CAMERA_CONFIG}
       frameloop="always"
       onCreated={throttleRender}
-      resize={{ scroll: false, debounce: { scroll: 0, resize: 100 } }}
+      style={{ width: '100%', height: '100%' }}
     >
       <color attach="background" args={['#87CEEB']} />
       <ambientLight intensity={0.4} />
-      <ResizeHandler />
+      <FullscreenResizeHandler />
       {children}
     </Canvas>
   );
