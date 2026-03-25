@@ -3,7 +3,7 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { throttleRender } from '@/utils/fpsThrottle';
 import { CAMERA_CONFIG } from '@/utils/constants';
 
-const REFERENCE_HEIGHT = 600; // Design reference height in pixels
+const REFERENCE_HEIGHT = 380; // Design reference height in pixels
 
 function ResponsiveZoom() {
   const { camera, size } = useThree();
